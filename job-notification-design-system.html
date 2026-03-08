@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Notification App — Design System Foundation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ── COLOR TOKENS ── */
+    --color-background:       #F7F6F3;
+    --color-surface:          #EFEDE8;
+    --color-surface-raised:   #FFFFFF;
+    --color-text-primary:     #111111;
+    --color-text-secondary:   #555550;
+    --color-text-disabled:    #AAAAAA;
+    --color-accent:           #8B0000;
+    --color-accent-hover:     #6E0000;
+    --color-accent-subtle:    #F5ECEC;
+    --color-success:          #3A6B47;
+    --color-success-subtle:   #EBF2ED;
+    --color-warning:          #8A6A1E;
+    --color-warning-subtle:   #F5F0E3;
+    --color-border:           #D9D6CF;
+    --color-border-strong:    #B8B4AC;
+
+    /* ── TYPOGRAPHY TOKENS ── */
+    --font-heading:           'Playfair Display', Georgia, serif;
+    --font-body:              'DM Sans', system-ui, sans-serif;
+    --font-mono:              'DM Mono', 'Courier New', monospace;
+
+    --text-h1:                2.75rem;   /* 44px */
+    --text-h2:                2rem;      /* 32px */
+    --text-h3:                1.5rem;    /* 24px */
+    --text-h4:                1.125rem;  /* 18px */
+    --text-body:              1.0625rem; /* 17px */
+    --text-small:             0.875rem;  /* 14px */
+    --text-label:             0.75rem;   /* 12px */
+
+    --leading-heading:        1.25;
+    --leading-body:           1.7;
+    --tracking-heading:       -0.01em;
+    --tracking-label:         0.06em;
+
+    /* ── SPACING TOKENS ── */
+    --spacing-8:              8px;
+    --spacing-16:             16px;
+    --spacing-24:             24px;
+    --spacing-40:             40px;
+    --spacing-64:             64px;
+
+    /* ── RADIUS TOKENS ── */
+    --radius-sm:              4px;
+    --radius-md:              4px;   /* system-wide uniform */
+    --radius-pill:            999px;
+
+    /* ── MOTION TOKENS ── */
+    --motion-duration-fast:   150ms;
+    --motion-duration-base:   200ms;
+    --motion-easing:          ease-in-out;
+
+    /* ── LAYOUT ── */
+    --container-max:          1200px;
+    --content-max:            720px;
+    --panel-primary:          70%;
+    --panel-secondary:        30%;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── PAGE CHROME ── */
+  .doc-header {
+    background: var(--color-text-primary);
+    color: var(--color-background);
+    padding: var(--spacing-40) var(--spacing-64);
+    border-bottom: 2px solid var(--color-accent);
+  }
+  .doc-header .label {
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: var(--spacing-8);
+    font-family: var(--font-mono);
+  }
+  .doc-header h1 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h1);
+    font-weight: 700;
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+    color: var(--color-background);
+  }
+  .doc-header .meta {
+    margin-top: var(--spacing-16);
+    font-size: var(--text-small);
+    color: #999;
+    font-family: var(--font-mono);
+  }
+
+  .doc-nav {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-16) var(--spacing-64);
+    display: flex;
+    gap: var(--spacing-24);
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .doc-nav a {
+    font-size: var(--text-small);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+    transition: color var(--motion-duration-fast) var(--motion-easing);
+  }
+  .doc-nav a:hover { color: var(--color-accent); }
+
+  .doc-body {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--spacing-64);
+  }
+
+  /* ── SECTION STRUCTURE ── */
+  .section {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-64);
+    margin-top: var(--spacing-64);
+  }
+  .section:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-8);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-accent-subtle);
+    max-width: 80px;
+  }
+
+  .section-title {
+    font-family: var(--font-heading);
+    font-size: var(--text-h2);
+    font-weight: 700;
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+    margin-bottom: var(--spacing-40);
+  }
+
+  h3.sub {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    font-weight: 600;
+    margin-top: var(--spacing-40);
+    margin-bottom: var(--spacing-16);
+    letter-spacing: var(--tracking-heading);
+  }
+  h4.sub {
+    font-family: var(--font-body);
+    font-size: var(--text-h4);
+    font-weight: 500;
+    margin-top: var(--spacing-24);
+    margin-bottom: var(--spacing-8);
+    color: var(--color-text-primary);
+  }
+
+  p { max-width: var(--content-max); margin-bottom: var(--spacing-16); }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-24); }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-24); }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-16); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-24);
+  }
+  .card-dark {
+    background: var(--color-text-primary);
+    border: 1px solid #333;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-24);
+    color: var(--color-background);
+  }
+  .card .card-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-8);
+  }
+  .card-dark .card-label { color: #888; }
+  .card .card-title {
+    font-weight: 500;
+    font-size: var(--text-body);
+    margin-bottom: var(--spacing-8);
+  }
+  .card p { font-size: var(--text-small); color: var(--color-text-secondary); margin: 0; }
+  .card-dark p { color: #aaa; }
+
+  /* ── COLOR SWATCHES ── */
+  .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--spacing-16); margin-top: var(--spacing-24); }
+  .swatch {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+  .swatch-color { height: 64px; }
+  .swatch-info { padding: var(--spacing-8); background: var(--color-surface-raised); }
+  .swatch-name { font-weight: 500; font-size: var(--text-small); display: block; }
+  .swatch-hex { font-family: var(--font-mono); font-size: var(--text-label); color: var(--color-text-secondary); }
+  .swatch-token { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-disabled); margin-top: 2px; display: block; }
+
+  /* ── TYPE SPECIMENS ── */
+  .type-specimen {
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: var(--spacing-8);
+  }
+  .type-specimen-demo { padding: var(--spacing-24) var(--spacing-24) var(--spacing-16); }
+  .type-specimen-meta {
+    padding: var(--spacing-8) var(--spacing-24);
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    gap: var(--spacing-24);
+  }
+  .type-meta-item { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary); }
+  .type-meta-item span { color: var(--color-text-primary); font-weight: 500; }
+
+  /* ── SPACING DEMO ── */
+  .spacing-row { display: flex; align-items: center; gap: var(--spacing-16); margin-bottom: var(--spacing-8); }
+  .spacing-bar { background: var(--color-accent); height: 24px; border-radius: 2px; flex-shrink: 0; }
+  .spacing-label { font-family: var(--font-mono); font-size: var(--text-label); color: var(--color-text-secondary); min-width: 100px; }
+  .spacing-use { font-size: var(--text-small); color: var(--color-text-secondary); }
+
+  /* ── COMPONENT DEMOS ── */
+  .component-demo {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-40);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-24);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-16);
+  }
+  .component-spec {
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-24);
+    margin-top: var(--spacing-16);
+  }
+  .spec-row { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--color-border); padding: var(--spacing-8) 0; font-size: var(--text-small); }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-key { color: var(--color-text-secondary); font-family: var(--font-mono); font-size: 12px; }
+  .spec-value { font-weight: 500; }
+
+  /* Actual components */
+  .btn-primary {
+    background: var(--color-accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-8) var(--spacing-24);
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--motion-duration-fast) var(--motion-easing), outline-offset var(--motion-duration-fast) var(--motion-easing);
+    letter-spacing: 0.01em;
+  }
+  .btn-primary:hover { background: var(--color-accent-hover); }
+  .btn-primary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  .btn-primary:disabled { background: var(--color-text-disabled); cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-8) var(--spacing-24);
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color var(--motion-duration-fast) var(--motion-easing), background var(--motion-duration-fast) var(--motion-easing);
+  }
+  .btn-secondary:hover { border-color: var(--color-text-primary); background: var(--color-surface); }
+  .btn-secondary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  .btn-secondary:disabled { color: var(--color-text-disabled); border-color: var(--color-border); cursor: not-allowed; }
+
+  .input-demo {
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-8) var(--spacing-16);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    background: var(--color-surface-raised);
+    color: var(--color-text-primary);
+    transition: border-color var(--motion-duration-fast) var(--motion-easing);
+    width: 280px;
+  }
+  .input-demo:focus { outline: none; border-color: var(--color-accent); }
+  .input-demo::placeholder { color: var(--color-text-disabled); }
+  .input-demo.error { border-color: var(--color-accent); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    padding: 3px var(--spacing-8);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+  }
+  .badge-not-started { background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text-secondary); }
+  .badge-in-progress { background: var(--color-warning-subtle); border: 1px solid #D4B86A; color: var(--color-warning); }
+  .badge-shipped { background: var(--color-success-subtle); border: 1px solid #7DB893; color: var(--color-success); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .checkbox-demo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-size: var(--text-small);
+    cursor: pointer;
+  }
+  .checkbox-demo input[type=checkbox] {
+    width: 16px; height: 16px;
+    accent-color: var(--color-accent);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .prompt-box {
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-16) var(--spacing-24);
+    font-size: var(--text-small);
+    color: var(--color-text-secondary);
+  }
+  .prompt-box strong { color: var(--color-text-primary); display: block; margin-bottom: 4px; }
+
+  .panel-demo {
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: var(--spacing-16) var(--spacing-24);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 500;
+    font-size: var(--text-small);
+    background: var(--color-surface);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-body { padding: var(--spacing-24); font-size: var(--text-small); color: var(--color-text-secondary); }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #111;
+    color: #E8E5DF;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-24);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin-top: var(--spacing-16);
+  }
+  .code-block .token-name { color: #7EC8A4; }
+  .code-block .token-value { color: #E6AC60; }
+  .code-block .comment { color: #666; }
+
+  /* ── LAYOUT DIAGRAM ── */
+  .layout-diagram {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-top: var(--spacing-24);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+  }
+  .layout-bar {
+    padding: var(--spacing-8) var(--spacing-16);
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .layout-workspace {
+    display: grid;
+    grid-template-columns: 70% 30%;
+    min-height: 120px;
+  }
+  .layout-primary {
+    padding: var(--spacing-16);
+    border-right: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+  }
+  .layout-secondary {
+    padding: var(--spacing-16);
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+  }
+  .layout-footer {
+    padding: var(--spacing-8) var(--spacing-16);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    text-align: center;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+  }
+
+  /* ── PRINCIPLES ── */
+  .principle {
+    border-left: 2px solid var(--color-border);
+    padding-left: var(--spacing-24);
+    margin-bottom: var(--spacing-24);
+    transition: border-color var(--motion-duration-base) var(--motion-easing);
+  }
+  .principle:hover { border-color: var(--color-accent); }
+  .principle-name { font-weight: 600; font-size: var(--text-body); margin-bottom: 4px; }
+  .principle-num { font-family: var(--font-mono); font-size: var(--text-label); color: var(--color-accent); margin-bottom: 6px; letter-spacing: 0.06em; }
+
+  /* ── CHECKLIST FOOTER ── */
+  .checklist-footer {
+    background: var(--color-text-primary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-16) var(--spacing-24);
+    display: flex;
+    gap: var(--spacing-24);
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: var(--spacing-16);
+  }
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    color: #888;
+    letter-spacing: 0.02em;
+  }
+  .checklist-item .box {
+    width: 14px; height: 14px;
+    border: 1.5px solid #444;
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .checklist-item.done .box { border-color: var(--color-success); background: var(--color-success); }
+  .checklist-item.done .box::after { content: '✓'; font-size: 9px; color: white; }
+  .checklist-item.done { color: #aaa; }
+
+  /* ── DOC FOOTER ── */
+  .doc-footer {
+    background: var(--color-text-primary);
+    color: var(--color-background);
+    text-align: center;
+    padding: var(--spacing-40) var(--spacing-64);
+    margin-top: var(--spacing-64);
+    border-top: 2px solid var(--color-accent);
+  }
+  .doc-footer .confirm {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    font-weight: 600;
+    letter-spacing: var(--tracking-heading);
+    margin-bottom: var(--spacing-8);
+  }
+  .doc-footer .sub-confirm { font-family: var(--font-mono); font-size: var(--text-label); color: #666; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: var(--text-small); margin-top: var(--spacing-16); }
+  thead tr { background: var(--color-surface); }
+  th { text-align: left; padding: var(--spacing-8) var(--spacing-16); font-weight: 500; font-size: var(--text-label); letter-spacing: 0.04em; text-transform: uppercase; font-family: var(--font-mono); border-bottom: 2px solid var(--color-border); color: var(--color-text-secondary); }
+  td { padding: var(--spacing-8) var(--spacing-16); border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  td code { font-family: var(--font-mono); font-size: 12px; background: var(--color-surface); padding: 1px 5px; border-radius: 3px; }
+  .pass { color: var(--color-success); font-weight: 500; font-size: 12px; }
+  .fail { color: var(--color-accent); font-weight: 500; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- ── PAGE HEADER ── -->
+<header class="doc-header">
+  <div class="label">Design System — Foundation</div>
+  <h1>Job Notification App</h1>
+  <div class="meta">Version 1.0 &nbsp;·&nbsp; B2C Product &nbsp;·&nbsp; Production Grade &nbsp;·&nbsp; March 2026</div>
+</header>
+
+<!-- ── NAV ── -->
+<nav class="doc-nav">
+  <a href="#s1">01 Principles</a>
+  <a href="#s2">02 Color</a>
+  <a href="#s3">03 Typography</a>
+  <a href="#s4">04 Spacing</a>
+  <a href="#s5">05 Layout</a>
+  <a href="#s6">06 Components</a>
+  <a href="#s7">07 Interaction</a>
+  <a href="#s8">08 Status</a>
+  <a href="#s9">09 Tokens</a>
+</nav>
+
+<main class="doc-body">
+
+  <!-- ── SECTION 1: PRINCIPLES ── -->
+  <section class="section" id="s1">
+    <div class="section-label">01</div>
+    <h2 class="section-title">Design Principles</h2>
+
+    <div class="principle">
+      <div class="principle-num">P-01</div>
+      <div class="principle-name">Clarity Before Completeness</div>
+      <p>Every element on screen must earn its place. When in doubt, remove it. Information that cannot be immediately understood is not useful information — it is noise. Present only what the user needs at this moment in their workflow.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">P-02</div>
+      <div class="principle-name">Structure Creates Calm</div>
+      <p>Consistent spacing, predictable layout patterns, and a defined visual hierarchy allow users to build mental models quickly. Uncertainty in layout produces cognitive load. Certainty in layout produces confidence.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">P-03</div>
+      <div class="principle-name">State Is Always Visible</div>
+      <p>The system must reflect its own state without ambiguity. Loading, empty, error, and success states are first-class citizens — not afterthoughts. Users should never wonder what is happening or what has happened.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">P-04</div>
+      <div class="principle-name">Precision Over Decoration</div>
+      <p>Visual details exist to communicate, not to impress. Typography conveys hierarchy. Color conveys meaning. Spacing conveys relationship. Nothing is decorative. Every visual decision has a functional rationale.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">P-05</div>
+      <div class="principle-name">Tone Earns Trust</div>
+      <p>This product handles something personal — a person's professional livelihood. Language, error messages, and microcopy must be composed, direct, and respectful. The system never blames, never overpromises, and never trivializes.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">P-06</div>
+      <div class="principle-name">Interaction Has Reason</div>
+      <p>Motion and transition serve orientation. They communicate change, confirm action, and reduce disorientation — never attract attention to themselves. If removing an animation produces a better experience, remove it.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">P-07</div>
+      <div class="principle-name">Consistency Is the Product</div>
+      <p>Users do not evaluate individual screens — they form impressions of a system. Consistent radius, consistent spacing, consistent tone, and consistent behavior compound into a product that feels considered and reliable.</p>
+    </div>
+  </section>
+
+  <!-- ── SECTION 2: COLOR ── -->
+  <section class="section" id="s2">
+    <div class="section-label">02</div>
+    <h2 class="section-title">Color System</h2>
+
+    <h3 class="sub">Color Palette</h3>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch-color" style="background:#F7F6F3;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Background</span>
+          <span class="swatch-hex">#F7F6F3</span>
+          <span class="swatch-token">--color-background</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#EFEDE8;border-bottom:1px solid #D9D6CF;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Surface</span>
+          <span class="swatch-hex">#EFEDE8</span>
+          <span class="swatch-token">--color-surface</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#FFFFFF;border-bottom:1px solid #D9D6CF;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Surface Raised</span>
+          <span class="swatch-hex">#FFFFFF</span>
+          <span class="swatch-token">--color-surface-raised</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#111111;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Text Primary</span>
+          <span class="swatch-hex">#111111</span>
+          <span class="swatch-token">--color-text-primary</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#555550;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Text Secondary</span>
+          <span class="swatch-hex">#555550</span>
+          <span class="swatch-token">--color-text-secondary</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#8B0000;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Accent</span>
+          <span class="swatch-hex">#8B0000</span>
+          <span class="swatch-token">--color-accent</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#3A6B47;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Success</span>
+          <span class="swatch-hex">#3A6B47</span>
+          <span class="swatch-token">--color-success</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:#8A6A1E;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Warning</span>
+          <span class="swatch-hex">#8A6A1E</span>
+          <span class="swatch-token">--color-warning</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub">Color Roles</h3>
+    <table>
+      <thead><tr><th>Role</th><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td>Background</td><td><code>--color-background</code></td><td>#F7F6F3</td><td>Page canvas. Used on body only.</td></tr>
+        <tr><td>Surface</td><td><code>--color-surface</code></td><td>#EFEDE8</td><td>Sidebar panels, table headers, nav areas.</td></tr>
+        <tr><td>Surface Raised</td><td><code>--color-surface-raised</code></td><td>#FFFFFF</td><td>Cards, inputs, modals. Sits above background.</td></tr>
+        <tr><td>Text Primary</td><td><code>--color-text-primary</code></td><td>#111111</td><td>Headings, body copy, labels, all default text.</td></tr>
+        <tr><td>Text Secondary</td><td><code>--color-text-secondary</code></td><td>#555550</td><td>Supporting labels, timestamps, metadata, helper text.</td></tr>
+        <tr><td>Text Disabled</td><td><code>--color-text-disabled</code></td><td>#AAAAAA</td><td>Disabled inputs, placeholder text, inactive states.</td></tr>
+        <tr><td>Accent</td><td><code>--color-accent</code></td><td>#8B0000</td><td>Primary buttons, active states, section labels, links.</td></tr>
+        <tr><td>Success</td><td><code>--color-success</code></td><td>#3A6B47</td><td>Confirmation messages, success badges, shipped status.</td></tr>
+        <tr><td>Warning</td><td><code>--color-warning</code></td><td>#8A6A1E</td><td>Caution messages, in-progress status, soft alerts.</td></tr>
+        <tr><td>Border</td><td><code>--color-border</code></td><td>#D9D6CF</td><td>Cards, inputs, dividers. Default border weight.</td></tr>
+        <tr><td>Border Strong</td><td><code>--color-border-strong</code></td><td>#B8B4AC</td><td>Secondary buttons, emphasized dividers.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub">Contrast Compliance (WCAG 2.1)</h3>
+    <table>
+      <thead><tr><th>Pairing</th><th>Ratio</th><th>AA Normal</th><th>AA Large</th></tr></thead>
+      <tbody>
+        <tr><td>#111111 on #F7F6F3</td><td>17.3:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>#111111 on #FFFFFF</td><td>20.1:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>#8B0000 on #FFFFFF</td><td>8.1:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>#8B0000 on #F7F6F3</td><td>7.4:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>#555550 on #F7F6F3</td><td>7.2:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>#FFFFFF on #8B0000</td><td>8.1:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>#3A6B47 on #EBF2ED</td><td>5.4:1</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>#AAAAAA on #FFFFFF</td><td>2.3:1</td><td class="fail">FAIL</td><td class="pass">PASS (18px+)</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:var(--spacing-16);">Note: Disabled text at #AAAAAA intentionally does not meet AA — it is never used for essential information. Disabled state must always be accompanied by another visual indicator (cursor, opacity, or structural change).</p>
+
+    <h3 class="sub">When NOT to Use Accent (#8B0000)</h3>
+    <div class="grid-2" style="margin-top:var(--spacing-16);">
+      <div class="card">
+        <div class="card-label">Do Not Use For</div>
+        <p>Large background fills or full-bleed sections. Text longer than a label or link. Decorative dividers or borders with no semantic meaning. Secondary or tertiary actions — accent is reserved for primary intent only. Error states — accent is not an error color.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">4-Color Rule</div>
+        <p>At any given moment in the UI, no more than four colors should be visually present: Background, Text, one Surface tone, and one semantic color (Accent, Success, or Warning). This constraint forces hierarchy and prevents visual fragmentation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 3: TYPOGRAPHY ── -->
+  <section class="section" id="s3">
+    <div class="section-label">03</div>
+    <h2 class="section-title">Typography System</h2>
+
+    <div class="grid-2" style="margin-bottom:var(--spacing-24);">
+      <div class="card">
+        <div class="card-label">Heading Face</div>
+        <div class="card-title" style="font-family:var(--font-heading);font-size:1.5rem;">Playfair Display</div>
+        <p>Serif. Confident. Weight: 400, 600, 700. Used for all headings H1–H3. Conveys editorial authority without ornament.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Body & UI Face</div>
+        <div class="card-title" style="font-size:1.25rem;">DM Sans</div>
+        <p>Humanist sans-serif. Weight: 300, 400, 500. Used for all body copy, labels, buttons, and UI text. Legible at small sizes.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Type Scale</h3>
+
+    <div class="type-specimen">
+      <div class="type-specimen-demo">
+        <div style="font-family:var(--font-heading);font-size:var(--text-h1);font-weight:700;line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);">Your Next Role Starts Here</div>
+      </div>
+      <div class="type-specimen-meta">
+        <div class="type-meta-item">Level <span>H1</span></div>
+        <div class="type-meta-item">Size <span>44px / 2.75rem</span></div>
+        <div class="type-meta-item">Weight <span>700</span></div>
+        <div class="type-meta-item">Face <span>Playfair Display</span></div>
+        <div class="type-meta-item">Leading <span>1.25</span></div>
+        <div class="type-meta-item">Token <span>--text-h1</span></div>
+      </div>
+    </div>
+
+    <div class="type-specimen" style="margin-top:var(--spacing-8);">
+      <div class="type-specimen-demo">
+        <div style="font-family:var(--font-heading);font-size:var(--text-h2);font-weight:700;line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);">Notification Preferences</div>
+      </div>
+      <div class="type-specimen-meta">
+        <div class="type-meta-item">Level <span>H2</span></div>
+        <div class="type-meta-item">Size <span>32px / 2rem</span></div>
+        <div class="type-meta-item">Weight <span>700</span></div>
+        <div class="type-meta-item">Face <span>Playfair Display</span></div>
+        <div class="type-meta-item">Token <span>--text-h2</span></div>
+      </div>
+    </div>
+
+    <div class="type-specimen" style="margin-top:var(--spacing-8);">
+      <div class="type-specimen-demo">
+        <div style="font-family:var(--font-heading);font-size:var(--text-h3);font-weight:600;line-height:var(--leading-heading);letter-spacing:var(--tracking-heading);">Recently Posted Matches</div>
+      </div>
+      <div class="type-specimen-meta">
+        <div class="type-meta-item">Level <span>H3</span></div>
+        <div class="type-meta-item">Size <span>24px / 1.5rem</span></div>
+        <div class="type-meta-item">Weight <span>600</span></div>
+        <div class="type-meta-item">Face <span>Playfair Display</span></div>
+        <div class="type-meta-item">Token <span>--text-h3</span></div>
+      </div>
+    </div>
+
+    <div class="type-specimen" style="margin-top:var(--spacing-8);">
+      <div class="type-specimen-demo">
+        <div style="font-size:var(--text-h4);font-weight:500;line-height:1.4;">Senior Product Designer · Full-time · Remote</div>
+      </div>
+      <div class="type-specimen-meta">
+        <div class="type-meta-item">Level <span>H4 / Subhead</span></div>
+        <div class="type-meta-item">Size <span>18px / 1.125rem</span></div>
+        <div class="type-meta-item">Weight <span>500</span></div>
+        <div class="type-meta-item">Face <span>DM Sans</span></div>
+        <div class="type-meta-item">Token <span>--text-h4</span></div>
+      </div>
+    </div>
+
+    <div class="type-specimen" style="margin-top:var(--spacing-8);">
+      <div class="type-specimen-demo">
+        <div style="font-size:var(--text-body);line-height:var(--leading-body);max-width:var(--content-max);">We found 12 new roles matching your preferences this week. Each listing has been reviewed against your saved criteria. Review and act on any that interest you.</div>
+      </div>
+      <div class="type-specimen-meta">
+        <div class="type-meta-item">Level <span>Body</span></div>
+        <div class="type-meta-item">Size <span>17px / 1.0625rem</span></div>
+        <div class="type-meta-item">Weight <span>400</span></div>
+        <div class="type-meta-item">Leading <span>1.7</span></div>
+        <div class="type-meta-item">Token <span>--text-body</span></div>
+      </div>
+    </div>
+
+    <div class="type-specimen" style="margin-top:var(--spacing-8);">
+      <div class="type-specimen-demo">
+        <div style="font-size:var(--text-small);color:var(--color-text-secondary);line-height:1.5;">Posted 3 days ago · 200–500 applicants · Closes Friday</div>
+      </div>
+      <div class="type-specimen-meta">
+        <div class="type-meta-item">Level <span>Small / Meta</span></div>
+        <div class="type-meta-item">Size <span>14px / 0.875rem</span></div>
+        <div class="type-meta-item">Weight <span>400</span></div>
+        <div class="type-meta-item">Token <span>--text-small</span></div>
+      </div>
+    </div>
+
+    <div class="type-specimen" style="margin-top:var(--spacing-8);">
+      <div class="type-specimen-demo">
+        <div style="font-family:var(--font-mono);font-size:var(--text-label);letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-secondary);">Notification Channel</div>
+      </div>
+      <div class="type-specimen-meta">
+        <div class="type-meta-item">Level <span>Label / Caption</span></div>
+        <div class="type-meta-item">Size <span>12px / 0.75rem</span></div>
+        <div class="type-meta-item">Face <span>DM Mono</span></div>
+        <div class="type-meta-item">Tracking <span>0.06em</span></div>
+        <div class="type-meta-item">Token <span>--text-label</span></div>
+      </div>
+    </div>
+
+    <h3 class="sub">Spacing Between Type Elements</h3>
+    <table>
+      <thead><tr><th>Transition</th><th>Spacing</th><th>Token</th></tr></thead>
+      <tbody>
+        <tr><td>H1 → Body paragraph below</td><td>24px</td><td><code>--spacing-24</code></td></tr>
+        <tr><td>H2 → Body paragraph below</td><td>16px</td><td><code>--spacing-16</code></td></tr>
+        <tr><td>H3 → Body paragraph below</td><td>16px</td><td><code>--spacing-16</code></td></tr>
+        <tr><td>Label → Input below</td><td>8px</td><td><code>--spacing-8</code></td></tr>
+        <tr><td>Body paragraph → paragraph</td><td>16px</td><td><code>--spacing-16</code></td></tr>
+        <tr><td>Section heading → preceding content above</td><td>40px</td><td><code>--spacing-40</code></td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:var(--spacing-24);"><strong>Max text width:</strong> 720px (<code>--content-max</code>). All running body copy constrains to this measure. No justified text. Left-align all body copy.</p>
+  </section>
+
+  <!-- ── SECTION 4: SPACING ── -->
+  <section class="section" id="s4">
+    <div class="section-label">04</div>
+    <h2 class="section-title">Spacing System</h2>
+    <p>Five values only. No other values are permitted. All padding, margin, and gap must resolve to one of these values.</p>
+
+    <div style="margin-top:var(--spacing-40);">
+      <div class="spacing-row"><div class="spacing-label"><code>--spacing-8</code></div><div class="spacing-bar" style="width:8px;"></div><div class="spacing-use">8px — Inline gaps, label-to-input, icon-to-label, badge padding, tight internal rhythm.</div></div>
+      <div class="spacing-row"><div class="spacing-label"><code>--spacing-16</code></div><div class="spacing-bar" style="width:16px;"></div><div class="spacing-use">16px — Component internal padding (small), list item rhythm, form field stacking, nav items.</div></div>
+      <div class="spacing-row"><div class="spacing-label"><code>--spacing-24</code></div><div class="spacing-bar" style="width:24px;"></div><div class="spacing-use">24px — Card padding, modal padding, content group spacing, medium component padding.</div></div>
+      <div class="spacing-row"><div class="spacing-label"><code>--spacing-40</code></div><div class="spacing-bar" style="width:40px;"></div><div class="spacing-use">40px — Section spacing within a panel, major content breaks, between related groups.</div></div>
+      <div class="spacing-row"><div class="spacing-label"><code>--spacing-64</code></div><div class="spacing-bar" style="width:64px;"></div><div class="spacing-use">64px — Page-level section separation, full-bleed horizontal padding, top/bottom page breathing room.</div></div>
+    </div>
+
+    <h3 class="sub">Usage Guidelines</h3>
+    <table>
+      <thead><tr><th>Context</th><th>Spacing</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>Section-to-section vertical gap</td><td>64px</td><td>Clear visual separation between major content areas.</td></tr>
+        <tr><td>Card internal padding</td><td>24px</td><td>Content breathes without wasting structural area.</td></tr>
+        <tr><td>Form field vertical stacking</td><td>24px</td><td>Fields remain visually distinct without crowding.</td></tr>
+        <tr><td>Grid column gap</td><td>24px</td><td>Consistent gutter across all multi-column layouts.</td></tr>
+        <tr><td>Button internal padding (y/x)</td><td>8px / 24px</td><td>Comfortable tap target, proportional to label.</td></tr>
+        <tr><td>Inline label-to-icon gap</td><td>8px</td><td>Tight coupling signals belonging.</td></tr>
+        <tr><td>Panel top/bottom padding</td><td>40px</td><td>Content does not crowd panel edges.</td></tr>
+        <tr><td>Page horizontal padding</td><td>64px</td><td>Maintains margins on wide viewports.</td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:var(--spacing-24);"><strong>Vertical Rhythm Rule:</strong> All vertical measurements resolve to multiples of 8. Never use odd values (e.g., 12px, 20px, 36px). Whitespace communicates separation — generous space between sections signals a structural break; tight space within a component signals a relationship.</p>
+  </section>
+
+  <!-- ── SECTION 5: LAYOUT ── -->
+  <section class="section" id="s5">
+    <div class="section-label">05</div>
+    <h2 class="section-title">Global Layout Structure</h2>
+
+    <div class="layout-diagram">
+      <div class="layout-bar" style="background:var(--color-text-primary);color:var(--color-background);">Top Bar — Global nav, account, notifications</div>
+      <div class="layout-bar" style="background:var(--color-surface);">Context Header — Page title, primary action, breadcrumb</div>
+      <div class="layout-workspace">
+        <div class="layout-primary">Primary Workspace · 70% · Main content, lists, detail view</div>
+        <div class="layout-secondary">Secondary Panel · 30% · Filters, metadata, context, actions</div>
+      </div>
+      <div class="layout-footer">Proof Footer — □ UI Built &nbsp;□ Logic Working &nbsp;□ Test Passed &nbsp;□ Deployed</div>
+    </div>
+
+    <h3 class="sub">Layout Specifications</h3>
+    <div class="grid-2" style="margin-top:var(--spacing-16);">
+      <div class="component-spec">
+        <div class="spec-row"><span class="spec-key">Container max-width</span><span class="spec-value">1200px</span></div>
+        <div class="spec-row"><span class="spec-key">Primary workspace</span><span class="spec-value">70% (min 560px)</span></div>
+        <div class="spec-row"><span class="spec-key">Secondary panel</span><span class="spec-value">30% (min 240px)</span></div>
+        <div class="spec-row"><span class="spec-key">Panel gutter</span><span class="spec-value">24px</span></div>
+        <div class="spec-row"><span class="spec-key">Horizontal page padding</span><span class="spec-value">64px</span></div>
+        <div class="spec-row"><span class="spec-key">Top bar height</span><span class="spec-value">56px (7 × 8px)</span></div>
+        <div class="spec-row"><span class="spec-key">Context header height</span><span class="spec-value">72px (9 × 8px)</span></div>
+      </div>
+      <div class="component-spec">
+        <div class="spec-row"><span class="spec-key">Grid system</span><span class="spec-value">12-column, 24px gutter</span></div>
+        <div class="spec-row"><span class="spec-key">Column unit</span><span class="spec-value">~72px (at 1200px)</span></div>
+        <div class="spec-row"><span class="spec-key">Breakpoint: desktop</span><span class="spec-value">≥ 1024px → dual panel</span></div>
+        <div class="spec-row"><span class="spec-key">Breakpoint: tablet</span><span class="spec-value">768–1023px → stacked</span></div>
+        <div class="spec-row"><span class="spec-key">Breakpoint: mobile</span><span class="spec-value">< 768px → single col</span></div>
+        <div class="spec-row"><span class="spec-key">Content max-width</span><span class="spec-value">720px (body text)</span></div>
+        <div class="spec-row"><span class="spec-key">Alignment</span><span class="spec-value">Left-aligned. No centered layouts.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 6: COMPONENTS ── -->
+  <section class="section" id="s6">
+    <div class="section-label">06</div>
+    <h2 class="section-title">Component Library — Foundation</h2>
+
+    <h3 class="sub">Buttons</h3>
+    <div class="component-demo">
+      <button class="btn-primary">Save Preferences</button>
+      <button class="btn-primary" disabled>Processing</button>
+      <button class="btn-secondary">Cancel</button>
+      <button class="btn-secondary" disabled>Unavailable</button>
+    </div>
+    <div class="grid-2" style="margin-top:var(--spacing-16);">
+      <div class="component-spec">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);margin-bottom:var(--spacing-8);text-transform:uppercase;letter-spacing:0.04em;">Primary Button</div>
+        <div class="spec-row"><span class="spec-key">Background</span><span class="spec-value">#8B0000</span></div>
+        <div class="spec-row"><span class="spec-key">Text</span><span class="spec-value">#FFFFFF · DM Sans 500 · 14px</span></div>
+        <div class="spec-row"><span class="spec-key">Padding</span><span class="spec-value">8px 24px</span></div>
+        <div class="spec-row"><span class="spec-key">Radius</span><span class="spec-value">4px (--radius-md)</span></div>
+        <div class="spec-row"><span class="spec-key">Hover</span><span class="spec-value">background → #6E0000</span></div>
+        <div class="spec-row"><span class="spec-key">Focus</span><span class="spec-value">2px outline · #8B0000 · 3px offset</span></div>
+        <div class="spec-row"><span class="spec-key">Disabled</span><span class="spec-value">background → #AAAAAA · no cursor</span></div>
+        <div class="spec-row"><span class="spec-key">Transition</span><span class="spec-value">150ms ease-in-out</span></div>
+      </div>
+      <div class="component-spec">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);margin-bottom:var(--spacing-8);text-transform:uppercase;letter-spacing:0.04em;">Secondary Button</div>
+        <div class="spec-row"><span class="spec-key">Background</span><span class="spec-value">transparent</span></div>
+        <div class="spec-row"><span class="spec-key">Border</span><span class="spec-value">1.5px solid #B8B4AC</span></div>
+        <div class="spec-row"><span class="spec-key">Text</span><span class="spec-value">#111111 · DM Sans 500 · 14px</span></div>
+        <div class="spec-row"><span class="spec-key">Hover</span><span class="spec-value">border → #111111 · bg → #EFEDE8</span></div>
+        <div class="spec-row"><span class="spec-key">Disabled</span><span class="spec-value">text + border → disabled color</span></div>
+        <div class="spec-row"><span class="spec-key">Use for</span><span class="spec-value">Cancel, skip, secondary action only</span></div>
+      </div>
+    </div>
+
+    <h3 class="sub">Inputs</h3>
+    <div class="component-demo" style="flex-direction:column;align-items:flex-start;">
+      <div>
+        <div style="font-size:12px;font-family:var(--font-mono);letter-spacing:0.04em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:8px;">Email address</div>
+        <input class="input-demo" type="text" placeholder="name@company.com">
+      </div>
+      <div style="margin-top:var(--spacing-8);">
+        <div style="font-size:12px;font-family:var(--font-mono);letter-spacing:0.04em;text-transform:uppercase;color:var(--color-accent);margin-bottom:8px;">Job Title</div>
+        <input class="input-demo error" type="text" value="UX" style="width:280px;">
+        <div style="font-size:13px;color:var(--color-accent);margin-top:6px;">Enter the full job title to improve match accuracy.</div>
+      </div>
+    </div>
+    <div class="component-spec" style="margin-top:var(--spacing-16);">
+      <div class="spec-row"><span class="spec-key">Height</span><span class="spec-value">40px (5 × 8px)</span></div>
+      <div class="spec-row"><span class="spec-key">Border</span><span class="spec-value">1.5px solid --color-border</span></div>
+      <div class="spec-row"><span class="spec-key">Focus</span><span class="spec-value">border-color → --color-accent. No outline glow.</span></div>
+      <div class="spec-row"><span class="spec-key">Error</span><span class="spec-value">border-color → --color-accent. Label color → --color-accent.</span></div>
+      <div class="spec-row"><span class="spec-key">Placeholder</span><span class="spec-value">--color-text-disabled</span></div>
+      <div class="spec-row"><span class="spec-key">Transition</span><span class="spec-value">border-color 150ms ease-in-out</span></div>
+    </div>
+
+    <h3 class="sub">Cards</h3>
+    <div class="grid-2" style="margin-top:var(--spacing-16);">
+      <div class="card">
+        <div class="card-label">Job Match</div>
+        <div class="card-title">Senior Product Designer</div>
+        <p>Stripe · San Francisco, CA · Remote eligible</p>
+        <p style="margin-top:var(--spacing-8);">Posted 2 days ago · ≈180 applicants</p>
+      </div>
+      <div class="card-dark">
+        <div class="card-label">Summary</div>
+        <div class="card-title">14 New Matches</div>
+        <p>Since your last visit on Monday</p>
+      </div>
+    </div>
+    <div class="component-spec" style="margin-top:var(--spacing-16);">
+      <div class="spec-row"><span class="spec-key">Background</span><span class="spec-value">--color-surface-raised (#FFFFFF)</span></div>
+      <div class="spec-row"><span class="spec-key">Border</span><span class="spec-value">1px solid --color-border. No box-shadow.</span></div>
+      <div class="spec-row"><span class="spec-key">Radius</span><span class="spec-value">4px (--radius-md)</span></div>
+      <div class="spec-row"><span class="spec-key">Padding</span><span class="spec-value">24px</span></div>
+      <div class="spec-row"><span class="spec-key">Hover (interactive card)</span><span class="spec-value">border-color → --color-border-strong. 200ms.</span></div>
+    </div>
+
+    <h3 class="sub">Badges</h3>
+    <div class="component-demo">
+      <span class="badge badge-not-started"><span class="badge-dot"></span>Not Started</span>
+      <span class="badge badge-in-progress"><span class="badge-dot"></span>In Progress</span>
+      <span class="badge badge-shipped"><span class="badge-dot"></span>Shipped</span>
+    </div>
+
+    <h3 class="sub">Checkboxes &amp; Prompt Box</h3>
+    <div class="component-demo" style="flex-direction:column;align-items:flex-start;gap:var(--spacing-16);">
+      <label class="checkbox-demo">
+        <input type="checkbox" checked>
+        Email notifications for exact matches
+      </label>
+      <label class="checkbox-demo">
+        <input type="checkbox">
+        Weekly digest summary
+      </label>
+      <div class="prompt-box" style="width:100%;max-width:480px;">
+        <strong>Next step</strong>
+        You have not set your notification frequency. Configure it to start receiving alerts.
+      </div>
+    </div>
+
+    <h3 class="sub">Panel</h3>
+    <div class="panel-demo" style="max-width:400px;margin-top:var(--spacing-16);">
+      <div class="panel-header">
+        <span>Filter Results</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--color-accent);cursor:pointer;">Clear all</span>
+      </div>
+      <div class="panel-body">
+        <p>Panel content — filters, metadata, contextual actions. Constrained to secondary layout zone (30%).</p>
+      </div>
+    </div>
+    <div class="component-spec" style="margin-top:var(--spacing-16);max-width:400px;">
+      <div class="spec-row"><span class="spec-key">Header bg</span><span class="spec-value">--color-surface</span></div>
+      <div class="spec-row"><span class="spec-key">Body bg</span><span class="spec-value">--color-surface-raised</span></div>
+      <div class="spec-row"><span class="spec-key">Border</span><span class="spec-value">1px solid --color-border throughout</span></div>
+      <div class="spec-row"><span class="spec-key">Radius</span><span class="spec-value">4px (--radius-md)</span></div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 7: INTERACTION ── -->
+  <section class="section" id="s7">
+    <div class="section-label">07</div>
+    <h2 class="section-title">Interaction Principles</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Motion Philosophy</div>
+        <p>Motion communicates state change, not personality. Every transition must answer: what just changed, and why should the user notice? Duration is 150ms for instant feedback (hover, focus). 200ms for confirmations and reveals. No easing that overshoots. No parallax. No sequence animations between unrelated elements.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Feedback Hierarchy</div>
+        <p>Tier 1: Inline visual confirmation (border change, icon change). Tier 2: Toast / banner for system-level outcomes. Tier 3: Full-page state for critical transitions. Use the lowest tier that adequately communicates the change. Never escalate feedback without cause.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Error Messaging Tone</div>
+        <p>State what happened. Explain why it happened. Offer the specific action to fix it. Never use passive voice. Never say "something went wrong." Never blame the user. Example: "We couldn't save your preferences because the session timed out. Save again to continue."</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Empty State Philosophy</div>
+        <p>An empty state is a first-use state. It must orient the user, state what this area is for, and offer the precise action that will populate it. Never show a blank container. Never show only an illustration. Always include one actionable sentence.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Micro-interaction Rules</div>
+        <p>Hover: border or background shift. 150ms. Focus: visible outline — never remove for sighted keyboard users. Loading: inline skeleton placeholder in same layout position. Never full-page spinner for partial content loads. Disabled: cursor:not-allowed. Opacity 0.5 on the label only, not the container.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Transition Spec</div>
+        <p style="margin-bottom:var(--spacing-8);">All transitions use <code style="font-family:var(--font-mono);font-size:12px;background:var(--color-surface);padding:1px 4px;border-radius:2px;">ease-in-out</code>. Fast: 150ms. Base: 200ms. No spring. No bounce. No delay chains. Properties to transition: color, background-color, border-color, opacity. Do not transition layout properties (width, height, margin) in the main flow.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 8: STATUS ── -->
+  <section class="section" id="s8">
+    <div class="section-label">08</div>
+    <h2 class="section-title">Status System</h2>
+
+    <h3 class="sub">Status Badge System</h3>
+    <div class="component-demo" style="flex-direction:column;align-items:flex-start;gap:var(--spacing-16);">
+      <div style="display:flex;align-items:center;gap:var(--spacing-16);">
+        <span class="badge badge-not-started"><span class="badge-dot"></span>Not Started</span>
+        <span style="font-size:var(--text-small);color:var(--color-text-secondary);">Neutral surface bg · muted border · secondary text. No semantic color. Signals awaiting action.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--spacing-16);">
+        <span class="badge badge-in-progress"><span class="badge-dot"></span>In Progress</span>
+        <span style="font-size:var(--text-small);color:var(--color-text-secondary);">Warning-subtle bg · amber border · warning text. Signals active work. Dot is solid amber.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--spacing-16);">
+        <span class="badge badge-shipped"><span class="badge-dot"></span>Shipped</span>
+        <span style="font-size:var(--text-small);color:var(--color-text-secondary);">Success-subtle bg · muted green border · success text. Terminal state. Signals completion.</span>
+      </div>
+    </div>
+
+    <table style="margin-top:var(--spacing-24);">
+      <thead><tr><th>Status</th><th>Background</th><th>Border</th><th>Text / Dot</th><th>Token suffix</th></tr></thead>
+      <tbody>
+        <tr><td>Not Started</td><td>#EFEDE8</td><td>#D9D6CF</td><td>#555550</td><td><code>not-started</code></td></tr>
+        <tr><td>In Progress</td><td>#F5F0E3</td><td>#D4B86A</td><td>#8A6A1E</td><td><code>in-progress</code></td></tr>
+        <tr><td>Shipped</td><td>#EBF2ED</td><td>#7DB893</td><td>#3A6B47</td><td><code>shipped</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub">Checklist Footer</h3>
+    <div class="checklist-footer">
+      <div class="checklist-item done"><div class="box"></div>UI Built</div>
+      <div class="checklist-item done"><div class="box"></div>Logic Working</div>
+      <div class="checklist-item"><div class="box"></div>Test Passed</div>
+      <div class="checklist-item"><div class="box"></div>Deployed</div>
+    </div>
+    <div class="component-spec" style="margin-top:var(--spacing-16);">
+      <div class="spec-row"><span class="spec-key">Container</span><span class="spec-value">--color-text-primary background · 16px 24px padding</span></div>
+      <div class="spec-row"><span class="spec-key">Item font</span><span class="spec-value">DM Mono · 12px · letter-spacing 0.02em</span></div>
+      <div class="spec-row"><span class="spec-key">Checkbox — incomplete</span><span class="spec-value">14×14px · 1.5px border · #444 · 2px radius</span></div>
+      <div class="spec-row"><span class="spec-key">Checkbox — complete</span><span class="spec-value">fill → --color-success · checkmark white 9px</span></div>
+      <div class="spec-row"><span class="spec-key">Text — incomplete</span><span class="spec-value">#888</span></div>
+      <div class="spec-row"><span class="spec-key">Text — complete</span><span class="spec-value">#aaa (deemphasized on completion)</span></div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 9: TOKENS ── -->
+  <section class="section" id="s9">
+    <div class="section-label">09</div>
+    <h2 class="section-title">Design Tokens</h2>
+
+    <div class="code-block">
+<span class="comment">/* ════════════════════════════════════════
+   JOB NOTIFICATION APP — DESIGN TOKENS
+   Version 1.0
+   ════════════════════════════════════════ */</span>
+
+<span class="comment">/* ── COLOR ── */</span>
+<span class="token-name">--color-background</span>:        <span class="token-value">#F7F6F3</span>;
+<span class="token-name">--color-surface</span>:           <span class="token-value">#EFEDE8</span>;
+<span class="token-name">--color-surface-raised</span>:    <span class="token-value">#FFFFFF</span>;
+<span class="token-name">--color-text-primary</span>:      <span class="token-value">#111111</span>;
+<span class="token-name">--color-text-secondary</span>:    <span class="token-value">#555550</span>;
+<span class="token-name">--color-text-disabled</span>:     <span class="token-value">#AAAAAA</span>;
+<span class="token-name">--color-accent</span>:            <span class="token-value">#8B0000</span>;
+<span class="token-name">--color-accent-hover</span>:      <span class="token-value">#6E0000</span>;
+<span class="token-name">--color-accent-subtle</span>:     <span class="token-value">#F5ECEC</span>;
+<span class="token-name">--color-success</span>:           <span class="token-value">#3A6B47</span>;
+<span class="token-name">--color-success-subtle</span>:    <span class="token-value">#EBF2ED</span>;
+<span class="token-name">--color-warning</span>:           <span class="token-value">#8A6A1E</span>;
+<span class="token-name">--color-warning-subtle</span>:    <span class="token-value">#F5F0E3</span>;
+<span class="token-name">--color-border</span>:            <span class="token-value">#D9D6CF</span>;
+<span class="token-name">--color-border-strong</span>:     <span class="token-value">#B8B4AC</span>;
+
+<span class="comment">/* ── TYPOGRAPHY ── */</span>
+<span class="token-name">--font-heading</span>:            <span class="token-value">'Playfair Display', Georgia, serif</span>;
+<span class="token-name">--font-body</span>:               <span class="token-value">'DM Sans', system-ui, sans-serif</span>;
+<span class="token-name">--font-mono</span>:               <span class="token-value">'DM Mono', 'Courier New', monospace</span>;
+
+<span class="token-name">--text-h1</span>:                 <span class="token-value">2.75rem</span>;   <span class="comment">/* 44px */</span>
+<span class="token-name">--text-h2</span>:                 <span class="token-value">2rem</span>;      <span class="comment">/* 32px */</span>
+<span class="token-name">--text-h3</span>:                 <span class="token-value">1.5rem</span>;    <span class="comment">/* 24px */</span>
+<span class="token-name">--text-h4</span>:                 <span class="token-value">1.125rem</span>; <span class="comment">/* 18px */</span>
+<span class="token-name">--text-body</span>:               <span class="token-value">1.0625rem</span>;<span class="comment">/* 17px */</span>
+<span class="token-name">--text-small</span>:              <span class="token-value">0.875rem</span>; <span class="comment">/* 14px */</span>
+<span class="token-name">--text-label</span>:              <span class="token-value">0.75rem</span>;  <span class="comment">/* 12px */</span>
+
+<span class="token-name">--leading-heading</span>:         <span class="token-value">1.25</span>;
+<span class="token-name">--leading-body</span>:            <span class="token-value">1.7</span>;
+<span class="token-name">--tracking-heading</span>:        <span class="token-value">-0.01em</span>;
+<span class="token-name">--tracking-label</span>:          <span class="token-value">0.06em</span>;
+
+<span class="comment">/* ── SPACING ── */</span>
+<span class="token-name">--spacing-8</span>:               <span class="token-value">8px</span>;
+<span class="token-name">--spacing-16</span>:              <span class="token-value">16px</span>;
+<span class="token-name">--spacing-24</span>:              <span class="token-value">24px</span>;
+<span class="token-name">--spacing-40</span>:              <span class="token-value">40px</span>;
+<span class="token-name">--spacing-64</span>:              <span class="token-value">64px</span>;
+
+<span class="comment">/* ── RADIUS ── */</span>
+<span class="token-name">--radius-sm</span>:               <span class="token-value">2px</span>;  <span class="comment">/* checkboxes, dots */</span>
+<span class="token-name">--radius-md</span>:               <span class="token-value">4px</span>;  <span class="comment">/* all UI components */</span>
+<span class="token-name">--radius-pill</span>:             <span class="token-value">999px</span>;<span class="comment">/* badges only */</span>
+
+<span class="comment">/* ── MOTION ── */</span>
+<span class="token-name">--motion-duration-fast</span>:    <span class="token-value">150ms</span>;
+<span class="token-name">--motion-duration-base</span>:    <span class="token-value">200ms</span>;
+<span class="token-name">--motion-easing</span>:           <span class="token-value">ease-in-out</span>;
+
+<span class="comment">/* ── LAYOUT ── */</span>
+<span class="token-name">--container-max</span>:           <span class="token-value">1200px</span>;
+<span class="token-name">--content-max</span>:             <span class="token-value">720px</span>;
+<span class="token-name">--panel-primary</span>:           <span class="token-value">70%</span>;
+<span class="token-name">--panel-secondary</span>:         <span class="token-value">30%</span>;
+    </div>
+  </section>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="doc-footer">
+  <div class="confirm">Design System Foundation Created.</div>
+  <div class="sub-confirm">Job Notification App · B2C · Production Grade · v1.0</div>
+</footer>
+
+</body>
+</html>
