@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Notification Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg:#F7F6F3; --surface:#EFEDE8; --raised:#FFFFFF;
+  --text:#111111; --muted:#555550; --faint:#888882; --disabled:#AAAAAA;
+  --accent:#8B0000; --accent-dk:#6E0000; --accent-sub:#FBF0F0;
+  --success:#3A6B47; --success-sub:#EBF2ED; --success-b:#7DB893;
+  --warn:#8A6A1E; --warn-sub:#F5F0E3; --warn-b:#D4B86A;
+  --border:#D9D6CF; --border-str:#B8B4AC;
+  --fh:'Playfair Display',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+  --fm:'DM Mono','Courier New',monospace;
+  --h1:2.75rem; --h2:2rem; --h3:1.5rem; --h4:1.125rem;
+  --body:1.0625rem; --sm:0.875rem; --xs:0.75rem; --xxs:0.6875rem;
+  --s8:8px; --s16:16px; --s24:24px; --s40:40px; --s64:64px;
+  --r:4px; --navh:56px; --maxw:1200px; --prose:720px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;}
+button,input,select{font-family:var(--fb);}
+button{cursor:pointer;}
+
+/* ── TOPBAR ── */
+#topbar{position:fixed;top:0;left:0;right:0;height:var(--navh);background:var(--raised);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--s40);z-index:200;}
+.brand{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--text);background:none;border:none;padding:0;white-space:nowrap;flex-shrink:0;letter-spacing:-0.01em;transition:color 150ms ease-in-out;}
+.brand:hover{color:var(--accent);}
+.navlinks{display:flex;align-items:center;gap:var(--s8);}
+.nbtn{font-size:var(--sm);font-weight:500;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:var(--s8) var(--s16);line-height:1;transition:color 150ms ease-in-out,border-color 150ms ease-in-out;}
+.nbtn:hover{color:var(--text);}
+.nbtn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nbtn:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--r);}
+/* hamburger */
+.hbg{display:none;flex-direction:column;align-items:center;justify-content:center;gap:var(--s8);width:40px;height:40px;background:none;border:none;padding:var(--s8);border-radius:var(--r);transition:background 150ms ease-in-out;}
+.hbg:hover{background:var(--surface);}
+.bar{display:block;width:18px;height:1.5px;background:var(--text);border-radius:2px;transition:transform 200ms ease-in-out,opacity 150ms ease-in-out;transform-origin:center;}
+.hbg.open .bar:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+.hbg.open .bar:nth-child(2){opacity:0;}
+.hbg.open .bar:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+#mobnav{display:none;position:fixed;top:var(--navh);left:0;right:0;background:var(--raised);border-bottom:1px solid var(--border);flex-direction:column;padding:var(--s8) var(--s24) var(--s24);z-index:199;}
+#mobnav.open{display:flex;animation:sdown 200ms ease-in-out;}
+@keyframes sdown{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.mbbtn{font-size:var(--body);font-weight:500;color:var(--muted);background:none;border:none;border-bottom:1px solid var(--border);padding:var(--s16) var(--s8);text-align:left;width:100%;transition:color 150ms ease-in-out;}
+.mbbtn:last-child{border-bottom:none;}
+.mbbtn:hover{color:var(--text);}
+.mbbtn.active{color:var(--accent);}
+
+/* ── SHELL ── */
+#view{padding-top:var(--navh);min-height:100vh;}
+.pin{animation:pin 200ms ease-in-out;}
+@keyframes pin{from{opacity:0;}to{opacity:1;}}
+
+/* ── PROOF BAR ── */
+#proofbar{background:var(--text);padding:var(--s16) var(--s40);}
+.pfin{max-width:var(--maxw);margin:0 auto;display:flex;gap:var(--s24);flex-wrap:wrap;align-items:center;}
+.pfitem{display:flex;align-items:center;gap:var(--s8);font-family:var(--fm);font-size:var(--xs);color:#666;letter-spacing:0.02em;}
+.pfbox{width:14px;height:14px;border:1.5px solid #444;border-radius:2px;flex-shrink:0;}
+
+/* ── SHARED ── */
+.ctx{border-bottom:1px solid var(--border);background:var(--surface);padding:var(--s24) var(--s40);}
+.ctxin{max-width:var(--maxw);margin:0 auto;}
+.eye{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:var(--s8);}
+.ctx h1{font-family:var(--fh);font-size:var(--h2);font-weight:700;line-height:1.2;letter-spacing:-0.01em;}
+.ctxsub{margin-top:var(--s8);font-size:var(--sm);color:var(--muted);}
+.pw{max-width:var(--maxw);margin:0 auto;padding:var(--s40) var(--s40) var(--s64);}
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:var(--s24);align-items:start;}
+.scol{display:flex;flex-direction:column;gap:var(--s16);}
+
+/* Buttons */
+.btnp{display:inline-flex;align-items:center;gap:var(--s8);background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:var(--s16) var(--s40);font-size:var(--sm);font-weight:500;letter-spacing:0.01em;transition:background 150ms ease-in-out;}
+.btnp:hover{background:var(--accent-dk);}
+.btnp:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+.btns{display:inline-flex;align-items:center;gap:var(--s8);background:transparent;color:var(--text);border:1.5px solid var(--border-str);border-radius:var(--r);padding:var(--s8) var(--s24);font-size:var(--sm);font-weight:500;transition:border-color 150ms ease-in-out,background 150ms ease-in-out;}
+.btns:hover{border-color:var(--text);background:var(--surface);}
+.btnsm{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:var(--r);padding:5px var(--s16);font-size:var(--xs);font-weight:500;font-family:var(--fm);letter-spacing:0.02em;transition:all 150ms ease-in-out;white-space:nowrap;}
+.btnsm:hover{border-color:var(--border-str);color:var(--text);}
+.btnsm.sv{background:var(--accent-sub);border-color:var(--accent);color:var(--accent);}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:var(--s8);padding:3px var(--s8);border-radius:999px;font-family:var(--fm);font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;}
+.bd{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.bpend{background:var(--surface);border:1px solid var(--border);color:var(--muted);}
+.bact{background:var(--warn-sub);border:1px solid var(--warn-b);color:var(--warn);}
+.bdone{background:var(--success-sub);border:1px solid var(--success-b);color:var(--success);}
+.bli{background:#E8F0FB;border:1px solid #9BBCD6;color:#1A527A;}
+.bnk{background:#FFF3E0;border:1px solid #FFAD5C;color:#A05000;}
+.bind{background:#E8F5E9;border:1px solid #80C080;color:#276527;}
+
+/* Card */
+.card{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);}
+.ch{padding:var(--s16) var(--s24);border-bottom:1px solid var(--border);background:var(--surface);font-family:var(--fm);font-size:var(--xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+.cb{padding:var(--s24);}
+.ir{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--border);padding:var(--s8) 0;font-size:var(--sm);}
+.ir:last-child{border-bottom:none;}
+.ik{font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;}
+.iv{font-weight:500;}
+
+/* Empty state */
+.es{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s16);padding:var(--s64) var(--s40);min-height:280px;justify-content:center;}
+.esicon{width:40px;height:40px;border:1.5px solid var(--border-str);border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:var(--muted);}
+.esicon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+.es h3{font-family:var(--fh);font-size:var(--h3);font-weight:600;letter-spacing:-0.01em;}
+.es p{font-size:var(--sm);color:var(--muted);max-width:440px;line-height:1.65;}
+.estag{display:inline-flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s16);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-family:var(--fm);font-size:var(--xs);letter-spacing:0.04em;text-transform:uppercase;color:var(--muted);}
+.etdot{width:6px;height:6px;border-radius:50%;background:var(--border-str);}
+
+/* Form */
+.field{display:flex;flex-direction:column;gap:var(--s8);}
+.field label{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+.field input,.field select{height:38px;padding:0 var(--s16);border:1.5px solid var(--border);border-radius:var(--r);background:var(--raised);color:var(--text);font-size:var(--sm);transition:border-color 150ms ease-in-out;appearance:none;-webkit-appearance:none;}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);}
+.field input::placeholder{color:var(--disabled);}
+.selw{position:relative;}
+.selw::after{content:'';position:absolute;right:var(--s16);top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--muted);pointer-events:none;}
+.selw select{width:100%;padding-right:var(--s40);}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s24);}
+.divr{border:none;border-top:1px solid var(--border);margin:var(--s40) 0;}
+
+/* ── SCORE BADGES ── */
+.sc-green{background:var(--success-sub);border:1px solid var(--success-b);color:var(--success);}
+.sc-amber{background:var(--warn-sub);border:1px solid var(--warn-b);color:var(--warn);}
+.sc-neutral{background:var(--surface);border:1px solid var(--border-str);color:var(--muted);}
+.sc-grey{background:var(--surface);border:1px solid var(--border);color:var(--disabled);}
+
+/* ── TOGGLE PILL ── */
+.trow{display:flex;align-items:center;gap:var(--s16);flex-wrap:wrap;}
+.twrap{display:flex;align-items:center;gap:var(--s8);cursor:pointer;user-select:none;}
+.ttrack{width:36px;height:20px;border-radius:999px;background:var(--border-str);position:relative;transition:background 200ms ease-in-out;flex-shrink:0;}
+.tthumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform 200ms ease-in-out;pointer-events:none;}
+input.tinp{position:absolute;opacity:0;width:0;height:0;}
+input.tinp:checked~.ttrack{background:var(--accent);}
+input.tinp:checked~.ttrack .tthumb{transform:translateX(16px);}
+.tlabel{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.04em;color:var(--muted);text-transform:uppercase;}
+
+/* ── PREF BANNER ── */
+.pref-banner{display:flex;align-items:center;justify-content:space-between;gap:var(--s16);background:var(--warn-sub);border:1px solid var(--warn-b);border-radius:var(--r);padding:var(--s16) var(--s24);margin-bottom:var(--s24);font-size:var(--sm);flex-wrap:wrap;}
+.pref-banner-txt{color:var(--warn);font-weight:500;}
+.pref-banner button{white-space:nowrap;flex-shrink:0;}
+
+/* ── SLIDER ── */
+.sfield{display:flex;flex-direction:column;gap:var(--s8);}
+.sfield .slabel{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+.sfield input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
+.sfield input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);cursor:pointer;}
+.sfield input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer;border-style:solid;}
+
+/* ── MULTISELECT ── */
+.field select[multiple]{height:auto;min-height:90px;padding:var(--s8);appearance:auto;-webkit-appearance:auto;}
+.field select[multiple] option{padding:4px var(--s8);}
+
+/* ── CHECKBOX GROUP ── */
+.cbgroup{display:flex;gap:var(--s16);flex-wrap:wrap;margin-top:4px;}
+.cblbl{display:flex;align-items:center;gap:var(--s8);font-size:var(--sm);cursor:pointer;user-select:none;}
+.cblbl input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+
+/* ── FILTER BAR ── */
+.fbar{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:var(--s24);margin-bottom:var(--s24);}
+.frow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:var(--s16);align-items:end;}
+.frow2{display:grid;grid-template-columns:1fr auto;gap:var(--s24);align-items:center;margin-top:var(--s16);padding-top:var(--s16);border-top:1px solid var(--border);}
+.fmeta{display:flex;justify-content:space-between;align-items:center;font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:0.04em;}
+
+/* ── JOB CARDS ── */
+.jgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:var(--s24);}
+.jcard{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;transition:border-color 200ms ease-in-out;}
+.jcard:hover{border-color:var(--border-str);}
+.jchead{padding:var(--s24) var(--s24) var(--s16);flex:1;}
+.jtitle{font-family:var(--fh);font-size:var(--h4);font-weight:700;line-height:1.3;letter-spacing:-0.01em;margin-bottom:6px;}
+.jco{font-size:var(--sm);font-weight:500;color:var(--text);margin-bottom:var(--s8);}
+.jmeta{display:flex;flex-wrap:wrap;gap:var(--s8);margin-bottom:var(--s16);}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px var(--s8);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-family:var(--fm);color:var(--muted);letter-spacing:0.02em;}
+.jsal{font-size:var(--sm);font-weight:600;color:var(--text);margin-bottom:var(--s8);}
+.skills{display:flex;flex-wrap:wrap;gap:var(--s8);margin-top:var(--s8);}
+.sk{padding:3px var(--s8);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-family:var(--fm);color:var(--muted);}
+.jfoot{padding:var(--s16) var(--s24);border-top:1px solid var(--border);display:flex;gap:var(--s8);align-items:center;background:var(--bg);border-radius:0 0 var(--r) var(--r);}
+.jdays{font-family:var(--fm);font-size:var(--xs);color:var(--disabled);margin-left:auto;white-space:nowrap;}
+
+/* ── MODAL ── */
+#moverlay{display:none;position:fixed;inset:0;background:rgba(17,17,17,0.48);z-index:400;align-items:center;justify-content:center;padding:var(--s24);}
+#moverlay.open{display:flex;}
+#mbox{background:var(--raised);border-radius:var(--r);max-width:660px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid var(--border);}
+.mhead{padding:var(--s24);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s16);}
+.mtitle{font-family:var(--fh);font-size:var(--h3);font-weight:700;letter-spacing:-0.01em;line-height:1.3;}
+.mco{font-size:var(--sm);color:var(--muted);margin-top:6px;}
+.mclose{background:none;border:1.5px solid var(--border);border-radius:var(--r);width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;font-size:0.875rem;transition:all 150ms ease-in-out;}
+.mclose:hover{border-color:var(--border-str);color:var(--text);}
+.mbody{padding:var(--s24);display:flex;flex-direction:column;gap:var(--s24);}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);}
+.msec{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:var(--s8);}
+.mdesc{font-size:var(--sm);color:var(--muted);line-height:1.75;}
+.mfoot{padding:var(--s16) var(--s24);border-top:1px solid var(--border);display:flex;gap:var(--s16);flex-wrap:wrap;}
+
+/* ── LANDING ── */
+.herowr{max-width:var(--maxw);margin:0 auto;padding:var(--s64) var(--s40);min-height:calc(100vh - var(--navh));display:flex;flex-direction:column;justify-content:center;}
+.heroe{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:var(--s24);}
+.heroh{font-family:var(--fh);font-size:clamp(2rem,5vw,4rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;max-width:680px;margin-bottom:var(--s24);}
+.herosub{font-size:var(--h4);color:var(--muted);max-width:480px;line-height:1.6;margin-bottom:var(--s40);}
+.heroacts{display:flex;gap:var(--s16);align-items:center;flex-wrap:wrap;}
+.herono{margin-top:var(--s16);font-family:var(--fm);font-size:var(--xs);color:var(--disabled);letter-spacing:0.04em;}
+.herost{display:flex;gap:var(--s40);flex-wrap:wrap;margin-top:var(--s40);}
+.stn{font-family:var(--fh);font-size:var(--h3);font-weight:700;letter-spacing:-0.02em;}
+.stl{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.04em;text-transform:uppercase;color:var(--muted);margin-top:var(--s8);}
+
+/* ── DIGEST ENGINE ── */
+.digest-wrap{max-width:720px;margin:0 auto;padding:var(--s40) var(--s40) var(--s64);}
+.digest-email{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.digest-header{background:var(--text);padding:var(--s40) var(--s40) var(--s24);}
+.digest-eyebrow{font-family:var(--fm);font-size:var(--xs);letter-spacing:0.1em;text-transform:uppercase;color:#888;margin-bottom:var(--s16);}
+.digest-headline{font-family:var(--fh);font-size:1.75rem;font-weight:700;color:#fff;line-height:1.2;letter-spacing:-0.02em;margin-bottom:var(--s8);}
+.digest-date{font-family:var(--fm);font-size:var(--xs);color:#666;letter-spacing:0.04em;}
+.digest-body{padding:var(--s24) var(--s40);}
+.digest-intro{font-size:var(--sm);color:var(--muted);padding-bottom:var(--s24);border-bottom:1px solid var(--border);margin-bottom:var(--s24);line-height:1.65;}
+.digest-job{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s24);padding:var(--s16) 0;border-bottom:1px solid var(--border);}
+.digest-job:last-child{border-bottom:none;}
+.digest-job-left{flex:1;min-width:0;}
+.digest-num{font-family:var(--fm);font-size:var(--xs);color:var(--disabled);letter-spacing:0.06em;margin-bottom:4px;}
+.digest-jtitle{font-family:var(--fh);font-size:1rem;font-weight:700;letter-spacing:-0.01em;margin-bottom:4px;line-height:1.3;}
+.digest-jco{font-size:var(--sm);color:var(--muted);margin-bottom:var(--s8);}
+.digest-chips{display:flex;flex-wrap:wrap;gap:var(--s8);}
+.digest-chip{display:inline-flex;align-items:center;gap:4px;padding:2px var(--s8);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-family:var(--fm);color:var(--muted);}
+.digest-right{display:flex;flex-direction:column;align-items:flex-end;gap:var(--s8);flex-shrink:0;}
+.digest-score{font-family:var(--fm);font-size:var(--xs);font-weight:700;padding:3px var(--s8);border-radius:999px;}
+.digest-apply{display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:6px var(--s16);font-size:var(--xs);font-weight:500;font-family:var(--fb);letter-spacing:0.01em;transition:background 150ms ease-in-out;white-space:nowrap;}
+.digest-apply:hover{background:var(--accent-dk);}
+.digest-footer{padding:var(--s24) var(--s40);border-top:1px solid var(--border);background:var(--surface);}
+.digest-footer-txt{font-size:var(--xs);color:var(--muted);font-family:var(--fm);line-height:1.6;}
+.digest-actions{display:flex;gap:var(--s16);flex-wrap:wrap;margin-top:var(--s24);}
+.digest-note{font-family:var(--fm);font-size:var(--xs);color:var(--disabled);display:flex;align-items:center;gap:var(--s8);margin-top:var(--s16);}
+.digest-note-dot{width:6px;height:6px;border-radius:50%;background:var(--warn);flex-shrink:0;}
+.digest-ctrl{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:var(--s24);margin-bottom:var(--s24);}
+.digest-ctrl-row{display:flex;align-items:center;justify-content:space-between;gap:var(--s16);flex-wrap:wrap;}
+.digest-ctrl-meta{font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:0.04em;}
+.copy-flash{display:none;font-family:var(--fm);font-size:var(--xs);color:var(--success);letter-spacing:0.04em;}
+@media(max-width:768px){.digest-wrap{padding:var(--s24) var(--s16) var(--s64);}.digest-header{padding:var(--s24);}.digest-body{padding:var(--s16) var(--s24);}.digest-footer{padding:var(--s16) var(--s24);}.digest-job{flex-direction:column;gap:var(--s16);}.digest-right{flex-direction:row;align-items:center;flex-wrap:wrap;}}
+@media(max-width:900px){.pw{padding:var(--s40) var(--s24) var(--s64);}.frow{grid-template-columns:1fr 1fr;}.jgrid{grid-template-columns:1fr;}.two-col{grid-template-columns:1fr;}.sgrid{grid-template-columns:1fr;}}
+@media(max-width:768px){#topbar{padding:0 var(--s24);}.navlinks{display:none;}.hbg{display:flex;}.ctx{padding:var(--s24);}.herowr{padding:var(--s40) var(--s24);}#proofbar{padding:var(--s16) var(--s24);}.frow{grid-template-columns:1fr;}.mgrid{grid-template-columns:1fr;}}
+
+/* ── STATUS TRACKING ── */
+.brj{background:var(--accent-sub);border:1px solid #D4A0A0;color:var(--accent-dk);}
+.sbar{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s24);border-top:1px solid var(--border);flex-wrap:wrap;background:var(--bg);border-radius:0;}
+.sbar-lbl{font-family:var(--fm);font-size:var(--xs);color:var(--muted);letter-spacing:0.04em;flex-shrink:0;}
+.sst{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--r);font-family:var(--fm);font-size:11px;font-weight:500;letter-spacing:0.03em;border:1.5px solid transparent;cursor:pointer;transition:all 150ms ease-in-out;white-space:nowrap;background:none;line-height:1.4;}
+.sst:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/* Not Applied – neutral */
+.sst-na{color:var(--muted);border-color:var(--border);}
+.sst-na.sst-on{background:var(--surface);border-color:var(--border-str);color:var(--text);font-weight:600;}
+/* Applied – blue */
+.sst-ap{color:#1A527A;border-color:#9BBCD6;}
+.sst-ap.sst-on{background:#E8F0FB;border-color:#6A9EC4;color:#103A58;font-weight:600;}
+/* Rejected – red */
+.sst-rj{color:var(--accent);border-color:#D4A0A0;}
+.sst-rj.sst-on{background:var(--accent-sub);border-color:var(--accent);color:var(--accent-dk);font-weight:600;}
+/* Selected – green */
+.sst-sl{color:var(--success);border-color:var(--success-b);}
+.sst-sl.sst-on{background:var(--success-sub);border-color:var(--success-b);color:var(--success);font-weight:600;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:var(--s40);right:var(--s40);z-index:900;display:flex;flex-direction:column;gap:var(--s8);pointer-events:none;max-width:300px;}
+.tn{background:var(--text);color:#fff;padding:12px var(--s24);border-radius:var(--r);font-family:var(--fm);font-size:var(--xs);letter-spacing:0.04em;line-height:1.5;box-shadow:0 6px 24px rgba(17,17,17,0.22);animation:tnin 200ms ease-out both;pointer-events:none;}
+@keyframes tnin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.tn.tn-out{animation:tnout 260ms ease-in forwards;}
+@keyframes tnout{to{opacity:0;transform:translateY(8px);}}
+@media(max-width:768px){#toast{bottom:var(--s24);right:var(--s16);left:var(--s16);max-width:100%;}}
+
+/* ── RECENT STATUS UPDATES (Digest section) ── */
+.su-section{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);margin-top:var(--s24);overflow:hidden;}
+.su-head{padding:var(--s16) var(--s24);border-bottom:1px solid var(--border);background:var(--surface);font-family:var(--fm);font-size:var(--xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+.su-body{padding:0 var(--s24);}
+.su-row{display:flex;align-items:center;justify-content:space-between;gap:var(--s16);padding:var(--s16) 0;border-bottom:1px solid var(--border);}
+.su-row:last-child{border-bottom:none;}
+.su-info{flex:1;min-width:0;}
+.su-title{font-size:var(--sm);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.su-co{font-size:var(--xs);color:var(--muted);margin-top:2px;}
+.su-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.su-date{font-family:var(--fm);font-size:11px;color:var(--disabled);}
+.su-empty{padding:var(--s40) var(--s24);font-size:var(--sm);color:var(--muted);text-align:center;font-family:var(--fm);font-size:var(--xs);letter-spacing:0.03em;}
+
+/* ── TEST CHECKLIST ── */
+.tc-wrap{max-width:720px;margin:0 auto;padding:var(--s40) var(--s40) var(--s64);}
+.tc-summary{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);padding:var(--s24);margin-bottom:var(--s24);display:flex;align-items:center;justify-content:space-between;gap:var(--s16);flex-wrap:wrap;}
+.tc-score{font-family:var(--fh);font-size:var(--h3);font-weight:700;letter-spacing:-0.02em;line-height:1;}
+.tc-score span{color:var(--accent);}
+.tc-warn{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s16);background:var(--warn-sub);border:1px solid var(--warn-b);border-radius:var(--r);font-family:var(--fm);font-size:var(--xs);color:var(--warn);letter-spacing:0.04em;}
+.tc-ok{display:flex;align-items:center;gap:var(--s8);padding:var(--s8) var(--s16);background:var(--success-sub);border:1px solid var(--success-b);border-radius:var(--r);font-family:var(--fm);font-size:var(--xs);color:var(--success);letter-spacing:0.04em;}
+.tc-list{background:var(--raised);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.tc-head{padding:var(--s16) var(--s24);border-bottom:1px solid var(--border);background:var(--surface);font-family:var(--fm);font-size:var(--xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+.tc-item{display:flex;align-items:flex-start;gap:var(--s16);padding:var(--s16) var(--s24);border-bottom:1px solid var(--border);transition:background 150ms ease-in-out;cursor:pointer;}
+.tc-item:last-child{border-bottom:none;}
+.tc-item:hover{background:var(--surface);}
+.tc-item.checked{background:var(--success-sub);}
+.tc-cb{width:18px;height:18px;border:1.5px solid var(--border-str);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all 150ms ease-in-out;background:var(--raised);}
+.tc-item.checked .tc-cb{background:var(--success);border-color:var(--success);color:#fff;}
+.tc-cb-tick{display:none;font-size:11px;font-weight:700;line-height:1;}
+.tc-item.checked .tc-cb-tick{display:block;}
+.tc-content{flex:1;min-width:0;}
+.tc-label{font-size:var(--sm);font-weight:500;line-height:1.4;margin-bottom:4px;}
+.tc-item.checked .tc-label{color:var(--success);text-decoration:line-through;text-decoration-color:var(--success-b);}
+.tc-tip{font-family:var(--fm);font-size:var(--xs);color:var(--disabled);line-height:1.5;letter-spacing:0.02em;}
+.tc-num{font-family:var(--fm);font-size:var(--xs);color:var(--disabled);letter-spacing:0.04em;flex-shrink:0;margin-top:3px;width:20px;text-align:right;}
+.tc-actions{display:flex;gap:var(--s16);align-items:center;flex-wrap:wrap;margin-top:var(--s24);}
+/* Ship page */
+.ship-wrap{max-width:640px;margin:0 auto;padding:var(--s64) var(--s40);}
+.ship-lock{background:var(--raised);border:1.5px solid var(--accent);border-radius:var(--r);padding:var(--s40);text-align:center;}
+.ship-lock-icon{width:48px;height:48px;border:1.5px solid var(--border-str);border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:var(--muted);margin:0 auto var(--s24);}
+.ship-lock-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+.ship-lock h2{font-family:var(--fh);font-size:var(--h3);font-weight:700;letter-spacing:-0.01em;margin-bottom:var(--s8);}
+.ship-lock p{font-size:var(--sm);color:var(--muted);line-height:1.65;margin-bottom:var(--s24);}
+.ship-progress{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:var(--s24);}
+.ship-progress-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 400ms ease-in-out;}
+.ship-ready{background:var(--success-sub);border:1.5px solid var(--success-b);border-radius:var(--r);padding:var(--s40);text-align:center;}
+.ship-ready h2{font-family:var(--fh);font-size:var(--h3);font-weight:700;letter-spacing:-0.01em;color:var(--success);margin-bottom:var(--s8);}
+.ship-ready p{font-size:var(--sm);color:var(--muted);line-height:1.65;margin-bottom:var(--s24);}
+@media(max-width:768px){.tc-wrap{padding:var(--s24) var(--s16) var(--s64);}.ship-wrap{padding:var(--s40) var(--s16);}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header id="topbar">
+  <button class="brand" onclick="go('/')">Job Notification Tracker</button>
+  <nav class="navlinks" aria-label="Primary navigation">
+    <button class="nbtn" data-r="/dashboard" onclick="go('/dashboard')">Dashboard</button>
+    <button class="nbtn" data-r="/saved"     onclick="go('/saved')">Saved</button>
+    <button class="nbtn" data-r="/digest"    onclick="go('/digest')">Digest</button>
+    <button class="nbtn" data-r="/settings"  onclick="go('/settings')">Settings</button>
+    <button class="nbtn" data-r="/proof"     onclick="go('/proof')">Proof</button>
+    <button class="nbtn" data-r="/jt/07-test" onclick="go('/jt/07-test')">Test</button>
+    <button class="nbtn" data-r="/jt/08-ship" onclick="go('/jt/08-ship')">Ship</button>
+  </nav>
+  <button class="hbg" id="hbg" aria-label="Toggle menu" aria-expanded="false" onclick="toggleMob()">
+    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+  </button>
+</header>
+
+<div id="mobnav" aria-hidden="true">
+  <button class="mbbtn" data-r="/dashboard" onclick="go('/dashboard')">Dashboard</button>
+  <button class="mbbtn" data-r="/saved"     onclick="go('/saved')">Saved</button>
+  <button class="mbbtn" data-r="/digest"    onclick="go('/digest')">Digest</button>
+  <button class="mbbtn" data-r="/settings"  onclick="go('/settings')">Settings</button>
+  <button class="mbbtn" data-r="/proof"     onclick="go('/proof')">Proof</button>
+  <button class="mbbtn" data-r="/jt/07-test" onclick="go('/jt/07-test')">Test</button>
+  <button class="mbbtn" data-r="/jt/08-ship" onclick="go('/jt/08-ship')">Ship</button>
+</div>
+
+<!-- MODAL -->
+<div id="moverlay" onclick="handleOverlayClick(event)">
+  <div id="mbox"></div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- VIEW -->
+<main id="view" aria-live="polite"></main>
+
+<!-- PROOF FOOTER -->
+<div id="proofbar">
+  <div class="pfin">
+    <div class="pfitem"><div class="pfbox"></div>UI Built</div>
+    <div class="pfitem"><div class="pfbox"></div>Logic Working</div>
+    <div class="pfitem"><div class="pfbox"></div>Test Passed</div>
+    <div class="pfitem"><div class="pfbox"></div>Deployed</div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   DATASET — 60 Realistic Indian Tech Jobs
+══════════════════════════════════════════════════════ */
+const JOBS = [
+{id:1,title:"SDE Intern",company:"Razorpay",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["Java","Spring Boot","MySQL","REST API"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"₹30k–₹45k/month",applyUrl:"https://razorpay.com/jobs",description:"Join Razorpay's core payments platform as an SDE Intern. You will build backend services in Java that process millions of daily transactions across UPI, cards, and net banking. Responsibilities include API development, writing unit tests, and participating in production code reviews alongside senior engineers. Familiarity with data structures, OOP concepts, and REST APIs is expected. Duration is 6 months with a Pre-Placement Offer extended to top performers based on project delivery and code quality."},
+{id:2,title:"Frontend Intern",company:"Swiggy",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["React","JavaScript","HTML","CSS","Git"],source:"Naukri",postedDaysAgo:2,salaryRange:"₹20k–₹35k/month",applyUrl:"https://careers.swiggy.com",description:"Swiggy's product engineering team is hiring a Frontend Intern to build consumer-facing features for its food delivery platform. You will work in a React codebase implementing UI components from Figma designs, integrating REST APIs, and handling state management. An eye for detail and understanding of responsive design patterns is essential. This is a 6-month internship where interns ship real features to production from week two, with mentorship from senior frontend engineers throughout."},
+{id:3,title:"Data Analyst Intern",company:"Flipkart",location:"Bangalore",mode:"Onsite",experience:"Fresher",skills:["Python","SQL","Tableau","Excel","Pandas"],source:"LinkedIn",postedDaysAgo:0,salaryRange:"₹22k–₹32k/month",applyUrl:"https://www.flipkartcareers.com",description:"Flipkart's analytics division is hiring a Data Analyst Intern to support growth and category teams. You will query large datasets using SQL, build Tableau dashboards, and present weekly metric reports to business stakeholders. Python proficiency for data manipulation using Pandas is required. You will be given ownership of one analytical project within the first month with direct access to petabyte-scale transactional data. PPO evaluation is conducted at the end of the internship."},
+{id:4,title:"QA Intern",company:"Freshworks",location:"Chennai",mode:"Hybrid",experience:"Fresher",skills:["Selenium","Java","TestNG","JIRA","Manual Testing"],source:"Indeed",postedDaysAgo:3,salaryRange:"₹18k–₹28k/month",applyUrl:"https://www.freshworks.com/company/careers",description:"Freshworks is hiring a QA Intern for its CRM product quality team. You will design test plans, automate regression suites in Selenium with Java, and track defects through JIRA in an Agile sprint cycle. Understanding of software testing principles and bug severity classification is expected. Freshworks offers a collaborative intern culture with weekly learning sessions, pairing with a senior QA mentor, and access to Udemy for continuous skill development throughout the internship."},
+{id:5,title:"Graduate Engineer Trainee",company:"Infosys",location:"Pune",mode:"Onsite",experience:"0-1",skills:["Java","SQL","Spring","Git","Agile"],source:"Naukri",postedDaysAgo:4,salaryRange:"3.6–4.5 LPA",applyUrl:"https://www.infosys.com/careers.html",description:"Infosys is hiring Graduate Engineer Trainees through its InfyTQ platform. Selected candidates complete a 3-month residential training at Mysore covering Java, SQL, software engineering practices, and client communication skills. Post-training deployment is on client projects in BFSI, retail, or manufacturing verticals. Candidates must have 60% and above consistently across all semesters. Infosys provides structured appraisal cycles, internal certification support, and a global mobility programme for high-performing engineers."},
+{id:6,title:"Graduate Engineer Trainee",company:"TCS",location:"Mumbai",mode:"Onsite",experience:"0-1",skills:["C","C++","Java","DBMS","Aptitude"],source:"Naukri",postedDaysAgo:5,salaryRange:"3.36–4 LPA",applyUrl:"https://www.tcs.com/careers",description:"TCS invites applications for GETs through its National Qualifier Test. Assessment covers verbal ability, quantitative aptitude, and programming logic. Selected engineers receive 6 weeks of comprehensive training before project allocation across enterprise services, cloud, and analytics. TCS provides the iEvolve learning platform, structured career paths, and exposure to global Fortune 500 clients. This is a permanent full-time offer with benefits from day one including medical cover and EPF."},
+{id:7,title:"Junior Backend Developer",company:"CRED",location:"Bangalore",mode:"Remote",experience:"1-3",skills:["Python","Django","PostgreSQL","Redis","Celery"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"10–18 LPA",applyUrl:"https://cred.club/careers",description:"CRED's platform engineering team is hiring a Junior Backend Developer to build scalable services for India's most premium credit card app. You will own Python/Django microservices, design database schemas, build Celery task pipelines, and contribute to internal developer tooling. Strong understanding of REST API design, caching strategies, and relational database performance tuning is required. CRED has a high-ownership culture where engineers are expected to deliver end-to-end — from design to production deployment."},
+{id:8,title:"React Developer",company:"Zoho",location:"Chennai",mode:"Onsite",experience:"1-3",skills:["React","TypeScript","Redux","REST API","Webpack"],source:"Naukri",postedDaysAgo:2,salaryRange:"6–12 LPA",applyUrl:"https://www.zohocorp.com/careers",description:"Zoho's product engineering team is hiring a React Developer to build enterprise SaaS features used by 80 million users worldwide. You will develop reusable component libraries, implement complex frontend interactions, and integrate backend APIs across Zoho's product suite. TypeScript proficiency, Redux expertise, and attention to accessibility standards are required. Zoho builds everything in-house — you will work on code that goes directly to production without agency overhead, giving engineers a rare sense of craft ownership."},
+{id:9,title:"Java Developer (0–1 yr)",company:"Wipro",location:"Hyderabad",mode:"Hybrid",experience:"0-1",skills:["Java","Spring Boot","Hibernate","Maven","JUnit"],source:"Indeed",postedDaysAgo:6,salaryRange:"4–6 LPA",applyUrl:"https://careers.wipro.com",description:"Wipro Technologies is hiring Java Developers with under 1 year of experience for its enterprise application delivery practice. You will build and maintain REST APIs, write JUnit test cases, and participate in Agile sprint ceremonies for financial services clients. A 3-month onboarding programme pairs you with a senior developer mentor. Wipro provides access to Coursera learning paths, internal hackathons, and a performance-linked increment review in the first year."},
+{id:10,title:"Python Developer (Fresher)",company:"Accenture",location:"Pune",mode:"Hybrid",experience:"Fresher",skills:["Python","Flask","SQL","Git","REST API"],source:"Naukri",postedDaysAgo:3,salaryRange:"4–5.5 LPA",applyUrl:"https://www.accenture.com/in-en/careers",description:"Accenture's technology delivery practice is hiring Python Developer freshers to work on automation scripts, data pipelines, and API integrations for global enterprise clients. Strong Python fundamentals and a willingness to learn cloud tooling are required. Accenture's TechU programme provides 12 weeks of structured learning covering Python, cloud platforms, and Agile delivery methodologies. This role offers cross-domain exposure across BFSI, retail, and healthcare verticals with structured performance review every 6 months."},
+{id:11,title:"DevOps Intern",company:"PhonePe",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["Linux","Docker","Kubernetes","CI/CD","Bash"],source:"LinkedIn",postedDaysAgo:0,salaryRange:"₹32k–₹48k/month",applyUrl:"https://www.phonepe.com/careers",description:"PhonePe's infrastructure team is hiring a DevOps Intern to work on container orchestration, deployment pipelines, and production monitoring for India's largest UPI platform. You will assist in maintaining Kubernetes clusters, writing Bash automation scripts, and improving CI/CD pipeline reliability. Basic Linux knowledge and curiosity about distributed systems are required. PhonePe serves 400 million registered users — you will learn how to operate infrastructure at genuinely massive scale with direct mentorship from senior SREs."},
+{id:12,title:"Android Developer (1–3 yr)",company:"Paytm",location:"Noida",mode:"Onsite",experience:"1-3",skills:["Kotlin","Android SDK","MVVM","Retrofit","Firebase"],source:"Naukri",postedDaysAgo:7,salaryRange:"8–14 LPA",applyUrl:"https://paytm.com/careers",description:"Paytm is hiring an Android Developer for its consumer super-app team. You will build and optimise payment flows, UPI integrations, and mini-app features using Kotlin and Android Architecture Components. Proficiency in MVVM pattern, Retrofit for API calls, and Firebase for push notifications is required. Experience with A/B testing frameworks and performance profiling tools is a strong plus. Paytm offers competitive salary, ESOPs, and direct ownership over features used by 90 million monthly active users."},
+{id:13,title:"ML Engineer Intern",company:"Juspay",location:"Bangalore",mode:"Remote",experience:"Fresher",skills:["Python","TensorFlow","Scikit-learn","Pandas","Statistics"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"₹28k–₹42k/month",applyUrl:"https://juspay.in/careers",description:"Juspay's AI team is hiring an ML Engineer Intern to work on fraud detection models and transaction risk scoring pipelines. You will build and evaluate classification models using Python and scikit-learn, work with feature stores, and contribute to model monitoring dashboards. Familiarity with statistical modelling and basic ML concepts is required. Juspay processes over 50 million daily transactions — your models will protect real financial flows from day one in a production ML environment."},
+{id:14,title:"Full Stack Intern",company:"Groww",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["React","Node.js","MongoDB","Express","REST API"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"₹32k–₹52k/month",applyUrl:"https://groww.in/careers",description:"Groww's product engineering team is hiring a Full Stack Intern with genuine ownership of end-to-end features. You will build React components, write Node.js API endpoints, and interact with MongoDB collections for the investment and mutual funds platform. Interns are treated as junior engineers and are expected to ship production features within the first 3 weeks. Prior personal project experience demonstrating frontend and backend integration is highly valued. Strong PPO track record for outstanding interns."},
+{id:15,title:"Cloud Support Engineer",company:"Amazon (AWS)",location:"Hyderabad",mode:"Onsite",experience:"0-1",skills:["Linux","Networking","AWS EC2","S3","TCP/IP"],source:"Indeed",postedDaysAgo:5,salaryRange:"5–8 LPA",applyUrl:"https://www.amazon.jobs",description:"AWS is hiring Cloud Support Engineers for its 24x7 technical support organisation in Hyderabad. You will troubleshoot customer issues across compute, storage, and networking services through tickets and live calls. Strong Linux fundamentals and networking knowledge covering TCP/IP, DNS, and HTTP are required. AWS provides structured support engineering training, access to all AWS certifications at no cost, and a clear career path into solutions architecture or cloud engineering within 18 to 24 months."},
+{id:16,title:"Business Analyst Intern",company:"Capgemini",location:"Mumbai",mode:"Hybrid",experience:"Fresher",skills:["Excel","SQL","PowerPoint","Agile","JIRA"],source:"Naukri",postedDaysAgo:4,salaryRange:"₹20k–₹30k/month",applyUrl:"https://www.capgemini.com/in-en/careers",description:"Capgemini is hiring a Business Analyst Intern for its digital transformation consulting practice. You will assist in requirement gathering workshops, process documentation, Agile sprint planning, and stakeholder presentations for enterprise banking and retail clients. Strong Excel and PowerPoint skills with clear written communication are required. Exposure to JIRA or Confluence is a plus. Capgemini offers a structured PPO programme with clear evaluation criteria and a global mentorship network for interns who demonstrate initiative."},
+{id:17,title:"iOS Developer (1–3 yr)",company:"Meesho",location:"Bangalore",mode:"Hybrid",experience:"1-3",skills:["Swift","UIKit","CoreData","Xcode","Alamofire"],source:"LinkedIn",postedDaysAgo:3,salaryRange:"10–16 LPA",applyUrl:"https://meesho.careers",description:"Meesho's mobile engineering team is hiring an iOS Developer for its supplier and consumer apps serving 140 million users. You will implement new product features in Swift, optimise app performance, and coordinate with backend engineers on API contracts. Proficiency in Swift, UIKit layout, and iOS memory management is required. Experience with Alamofire networking and push notification flows is a strong advantage. Meesho offers exceptional compensation, meaningful product ownership, and a team culture that values engineering craftsmanship."},
+{id:18,title:"Data Engineer (1–3 yr)",company:"Ola",location:"Bangalore",mode:"Hybrid",experience:"1-3",skills:["Apache Spark","Hive","Python","Airflow","BigQuery"],source:"LinkedIn",postedDaysAgo:6,salaryRange:"10–18 LPA",applyUrl:"https://www.olacabs.com/careers",description:"Ola's data platform team is hiring a Data Engineer to build and maintain large-scale pipelines processing ride, driver, and pricing telemetry. You will work with Spark, Hive, and Airflow to manage petabyte-scale data flows, ensure pipeline reliability, and contribute to data quality frameworks. Strong Python skills and distributed computing fundamentals are required. Experience with cloud data warehouses is highly valued. You will collaborate with data scientists and analytics engineers across Ola's mobility and financial services businesses."},
+{id:19,title:"UI/UX Designer Intern",company:"Urban Company",location:"Gurgaon",mode:"Hybrid",experience:"Fresher",skills:["Figma","Sketch","Prototyping","User Research","Design Systems"],source:"Indeed",postedDaysAgo:2,salaryRange:"₹22k–₹38k/month",applyUrl:"https://careers.urbancompany.com",description:"Urban Company's design team is offering a UI/UX Internship for students and recent graduates with a strong visual sensibility. You will create wireframes and high-fidelity prototypes in Figma, conduct user research sessions, and iterate on consumer app flows based on feedback. Familiarity with mobile design patterns and component-based design systems is required. You will present work in weekly design reviews and ship designs visible to millions of users. Urban Company offers real product ownership and a senior design mentor throughout your internship."},
+{id:20,title:"Node.js Developer (Fresher)",company:"Razorpay",location:"Bangalore",mode:"Remote",experience:"Fresher",skills:["Node.js","Express","MongoDB","REST API","JavaScript"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"5–8 LPA",applyUrl:"https://razorpay.com/jobs",description:"Razorpay is hiring a Node.js Developer fresher for its platform engineering team building payment infrastructure. You will develop backend services for checkout flows, integrate banking partner APIs, and maintain internal tooling. Strong JavaScript fundamentals, async/await patterns, and REST API design principles are required. Razorpay provides structured onboarding with a dedicated buddy engineer, access to payment domain expertise, and exposure to fintech systems trusted by 8 million Indian businesses."},
+{id:21,title:"Java Backend Developer (1–3 yr)",company:"IBM India",location:"Pune",mode:"Hybrid",experience:"1-3",skills:["Java","Microservices","Kafka","Docker","REST API"],source:"Naukri",postedDaysAgo:5,salaryRange:"8–14 LPA",applyUrl:"https://www.ibm.com/in-en/employment",description:"IBM's application modernisation practice is looking for a Java Backend Developer with 1 to 3 years of experience. You will build microservices for enterprise insurance and banking clients, implement event-driven communication with Kafka, and containerise services using Docker. Familiarity with 12-factor app principles and distributed tracing is preferred. IBM offers world-class learning through IBM Skills Academy, access to IBM Think conferences, and a clear technical career track towards Solution Architect or Distinguished Engineer."},
+{id:22,title:"SDE Intern",company:"Postman",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["JavaScript","Node.js","API Development","REST","Git"],source:"LinkedIn",postedDaysAgo:0,salaryRange:"₹40k–₹60k/month",applyUrl:"https://www.postman.com/company/careers",description:"Postman is hiring SDE Interns to work on the API platform used by 30+ million developers. You will contribute to API development tools, build features for the Postman product, and work with Node.js and JavaScript. Strong programming fundamentals and interest in APIs are required. Postman offers a high-impact internship with real product ownership, mentorship from senior engineers, and exposure to one of the world's most popular developer tools."},
+{id:23,title:"Product Analyst Intern",company:"Zepto",location:"Mumbai",mode:"Hybrid",experience:"Fresher",skills:["SQL","Excel","Product Thinking","Data Visualisation","Figma"],source:"Indeed",postedDaysAgo:3,salaryRange:"₹26k–₹42k/month",applyUrl:"https://zeptonow.com/careers",description:"Zepto's product team is hiring a Product Analyst Intern to sit at the intersection of data and product decisions. You will analyse delivery route efficiency, customer funnel drop-offs, and category performance using SQL and Excel, then present findings to product leads weekly. Zepto is India's fastest-growing quick commerce company operating at 10-minute delivery across 10 cities. This internship offers extraordinary pace, direct product ownership, and the rare chance to influence decisions that matter millions of customers every day."},
+{id:24,title:"React Native Developer (1–3 yr)",company:"Navi",location:"Bangalore",mode:"Remote",experience:"1-3",skills:["React Native","JavaScript","Redux","REST API","Firebase"],source:"LinkedIn",postedDaysAgo:4,salaryRange:"9–15 LPA",applyUrl:"https://navi.com/careers",description:"Navi's mobile team is hiring a React Native Developer to build lending and insurance product flows for its consumer app. You will implement UI screens from design specifications, integrate payment and KYC APIs, and optimise app startup performance. Prior experience with a production React Native application is required. Navi, founded by Sachin Bansal, is transforming financial services access for everyday Indians. Engineers are given meaningful product ownership, competitive compensation, and ESOPs with a 4-year vesting schedule."},
+{id:25,title:"Cybersecurity Analyst Intern",company:"TCS",location:"Chennai",mode:"Onsite",experience:"Fresher",skills:["Network Security","Linux","SIEM","Wireshark","Incident Response"],source:"Naukri",postedDaysAgo:7,salaryRange:"₹18k–₹28k/month",applyUrl:"https://www.tcs.com/careers",description:"TCS Cyber Defense Centre is hiring Cybersecurity Analyst Interns to assist with threat monitoring and incident response in a 24x7 Security Operations Centre environment. You will perform log analysis using SIEM tools, triage security alerts, and document incident reports under supervision of senior analysts. Basic networking knowledge and Linux familiarity are required. CEH or Security+ certification pursuit is a plus. TCS offers post-internship access to its Cyber Security Academy and vendor certification sponsorship for top interns."},
+{id:26,title:"Backend Intern",company:"Ather Energy",location:"Bangalore",mode:"Onsite",experience:"Fresher",skills:["Python","FastAPI","PostgreSQL","Redis","IoT"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"₹22k–₹38k/month",applyUrl:"https://www.atherenergy.com/careers",description:"Ather Energy's connected vehicle platform team is hiring a Backend Intern to work on APIs powering its EV dashboard and fleet management tools. You will develop FastAPI endpoints for vehicle telemetry ingestion, write PostgreSQL queries for time-series data, and integrate Redis caching for real-time metrics. Python proficiency and curiosity about embedded-cloud integrations are required. Ather is India's leading premium electric scooter brand with a uniquely technical culture — you will touch code that communicates directly with vehicles on the road."},
+{id:27,title:"SQL Developer (Fresher)",company:"Cognizant",location:"Hyderabad",mode:"Onsite",experience:"0-1",skills:["SQL","PL/SQL","Oracle","ETL","Data Warehousing"],source:"Naukri",postedDaysAgo:8,salaryRange:"3.5–5 LPA",applyUrl:"https://www.cognizant.com/in/en/careers",description:"Cognizant is hiring SQL Developers for its data and analytics practice serving BFSI clients. You will write complex SQL and PL/SQL queries, build ETL pipelines, and maintain data quality in Oracle-based data warehouses. Exposure to reporting tools like SSRS or Cognos is advantageous. Cognizant's GenC and GenC Elevate programmes provide structured ramp-up for freshers covering technical skills, professional communication, and client management. This is a permanent role with full-time benefits and clear performance review milestones."},
+{id:28,title:"Embedded Systems Intern",company:"Bosch India",location:"Coimbatore",mode:"Onsite",experience:"Fresher",skills:["C","Embedded C","RTOS","CAN Bus","Microcontrollers"],source:"Indeed",postedDaysAgo:5,salaryRange:"₹18k–₹30k/month",applyUrl:"https://www.bosch.in/careers",description:"Bosch India's automotive electronics division is offering an Embedded Systems Internship. You will write firmware for body control modules, implement CAN bus communication protocols, and test code on actual automotive microcontrollers in Bosch's hardware lab. Strong digital electronics fundamentals and Embedded C programming skills are required. Knowledge of AUTOSAR or FreeRTOS is highly valued. Bosch provides lab-bench access, structured mentorship from automotive engineers, and potential for PPO on projects shipped to European vehicle platforms."},
+{id:29,title:"Associate Software Engineer",company:"Oracle India",location:"Hyderabad",mode:"Hybrid",experience:"0-1",skills:["Java","PL/SQL","Oracle DB","REST API","Cloud"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"6–9 LPA",applyUrl:"https://www.oracle.com/in/corporate/careers",description:"Oracle India's product development organisation is hiring Associate Software Engineers for its ERP cloud and database product divisions. You will implement features in Oracle Cloud modules using Java, develop REST APIs, and work on data migration tooling for enterprise customers. Strong Java and SQL skills are required. Oracle offers compensation benchmarked to US tech companies, access to Oracle University certifications, structured mentorship through its Emerging Talent programme, and the unique career advantage of building the world's most widely deployed enterprise software."},
+{id:30,title:"Technical Support Engineer",company:"Dell Technologies",location:"Bangalore",mode:"Hybrid",experience:"0-1",skills:["Linux","Windows Server","Networking","Storage Systems","Troubleshooting"],source:"Indeed",postedDaysAgo:6,salaryRange:"4.5–7 LPA",applyUrl:"https://www.dell.com/en-in/careers",description:"Dell Technologies is hiring Technical Support Engineers for its enterprise storage and compute support division. You will resolve hardware and software issues for Dell PowerEdge servers, PowerStore arrays, and networking switches through remote and on-call support. Strong Linux and Windows Server fundamentals with networking knowledge are required. Dell offers structured vendor certifications, globally recognised career progression, and the opportunity to transition into field engineering or pre-sales architecture roles within 24 months."},
+{id:31,title:"Python Automation Engineer (1–3 yr)",company:"Accenture",location:"Bangalore",mode:"Hybrid",experience:"1-3",skills:["Python","Selenium","Pytest","Jenkins","BDD"],source:"Naukri",postedDaysAgo:3,salaryRange:"6–10 LPA",applyUrl:"https://www.accenture.com/in-en/careers",description:"Accenture's quality engineering practice is hiring a Python Automation Engineer. You will design test automation frameworks using Python and Selenium, implement BDD scenarios with Behave, and integrate test runs into Jenkins CI pipelines. Experience with Page Object Model and generating automated coverage reports is required. Clients span retail, BFSI, and healthcare domains giving you cross-industry exposure. Accenture's Pinnacle Award programme recognises top performers and accelerates promotion to senior automation engineer within 18 months."},
+{id:32,title:"Frontend Developer (1–3 yr)",company:"BrowserStack",location:"Mumbai",mode:"Remote",experience:"1-3",skills:["React","TypeScript","Webpack","CSS Architecture","Performance"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"12–20 LPA",applyUrl:"https://www.browserstack.com/careers",description:"BrowserStack is hiring a Frontend Developer to build its cloud testing platform used by 50,000+ organisations including Microsoft and Spotify. You will implement complex UI features in React/TypeScript, improve Core Web Vitals, and maintain a shared component library. Deep understanding of browser rendering, CSS architecture, and build tooling optimisation is required. BrowserStack offers remote-first flexibility, top-tier market compensation, stock options, annual learning budget, and the rare satisfaction of building tools that millions of developers rely on daily."},
+{id:33,title:"SDE Intern",company:"Zomato",location:"Gurgaon",mode:"Hybrid",experience:"Fresher",skills:["Go","Python","Kafka","MySQL","Microservices"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"₹48k–₹70k/month",applyUrl:"https://www.zomato.com/careers",description:"Zomato's food delivery platform team is hiring SDE Interns for its order routing and dispatch optimisation systems. You will contribute to backend services handling 3 million daily orders written primarily in Go and Python. Strong algorithmic thinking and at least one backend language proficiency are required. Zomato interns are given genuine production ownership within the second week — this is not a shadow programme. PPO conversion rate is among the highest at any Indian consumer tech company for engineering interns."},
+{id:34,title:"Data Science Intern",company:"Mu Sigma",location:"Bangalore",mode:"Onsite",experience:"Fresher",skills:["Python","R","Statistics","Machine Learning","Visualisation"],source:"Naukri",postedDaysAgo:9,salaryRange:"₹20k–₹32k/month",applyUrl:"https://www.mu-sigma.com/careers",description:"Mu Sigma is offering a Data Science Internship for statistics and engineering students. You will work on real client problems in supply chain optimisation, marketing attribution modelling, and risk analytics using Python and R. Statistical reasoning, regression modelling, and data storytelling skills are required. Mu Sigma's proprietary decision science platform exposes you to enterprise datasets at Fortune 500 scale. The company runs structured analytics bootcamps and provides client-facing presentation opportunities from the second month onward."},
+{id:35,title:"Product Engineer Intern",company:"Setu (Pine Labs)",location:"Bangalore",mode:"Remote",experience:"Fresher",skills:["Node.js","TypeScript","PostgreSQL","REST API","Fintech"],source:"LinkedIn",postedDaysAgo:0,salaryRange:"₹36k–₹55k/month",applyUrl:"https://setu.co/careers",description:"Setu, Pine Labs' API infrastructure company, is hiring Product Engineer Interns to build the financial API layer of India's digital economy. You will contribute to account aggregation, BBPS bill payment, and UPI payment link APIs using Node.js and TypeScript. Your code will be consumed by hundreds of fintech companies. Strong TypeScript skills and curiosity about API design principles are required. Setu's engineering culture is developer-first, documentation-heavy, and values simplicity of interface design above all else."},
+{id:36,title:"Junior QA Engineer (1–3 yr)",company:"Zoho",location:"Chennai",mode:"Onsite",experience:"1-3",skills:["Manual Testing","Selenium","SQL","JIRA","Test Planning"],source:"Naukri",postedDaysAgo:4,salaryRange:"5–8 LPA",applyUrl:"https://www.zohocorp.com/careers",description:"Zoho is hiring a Junior QA Engineer to own test planning for assigned modules across its SaaS product portfolio used by 80 million users. You will maintain Selenium automation suites, conduct exploratory testing sessions, and document findings in JIRA with clear reproduction steps. Zoho promotes internally at high rates — many QA leads in the company started in junior roles. The company offers long-term career stability, competitive compensation, and a craft-oriented engineering culture that values quality as a first-class concern."},
+{id:37,title:"Cloud Infrastructure Intern",company:"Nutanix India",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["Python","Linux","VMware","Virtualisation","Networking"],source:"Indeed",postedDaysAgo:3,salaryRange:"₹36k–₹52k/month",applyUrl:"https://www.nutanix.com/company/careers",description:"Nutanix India's systems engineering team is offering a Cloud Infrastructure Internship for students passionate about hyperconverged infrastructure and virtualisation. You will write Python automation scripts for lab environments, assist with VMware configuration testing, and support the engineering team building Nutanix's AOS product. Linux proficiency and networking fundamentals are required. Nutanix runs a dedicated intern programme with hackathons, PPO evaluations, and access to its Bangalore R&D centre housing 600+ engineers working on next-generation infrastructure."},
+{id:38,title:"Golang Developer (1–3 yr)",company:"ClearTax",location:"Bangalore",mode:"Remote",experience:"1-3",skills:["Go","gRPC","PostgreSQL","Docker","Distributed Systems"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"10–18 LPA",applyUrl:"https://cleartax.in/careers",description:"ClearTax's backend infrastructure team is hiring a Golang Developer to build highly concurrent tax processing services. You will develop gRPC microservices for GST filing engines, design PostgreSQL schemas for audit data, and containerise services with Docker. Strong Go proficiency and understanding of concurrency patterns and distributed system principles are required. ClearTax processes India's highest volume of income tax returns — your code serves millions of Indians at peak ITR season. Remote-first culture with strong engineering standards and async-first communication."},
+{id:39,title:"Salesforce Developer (Fresher)",company:"Capgemini",location:"Pune",mode:"Onsite",experience:"0-1",skills:["Salesforce","Apex","Lightning Web Components","SOQL","Trailhead"],source:"Naukri",postedDaysAgo:6,salaryRange:"4–6.5 LPA",applyUrl:"https://www.capgemini.com/in-en/careers",description:"Capgemini is hiring freshers for Salesforce Developer roles within its business applications practice. You will learn and implement Salesforce CRM customisations using Apex triggers, Lightning Web Components, and SOQL queries for insurance and retail enterprise clients. Capgemini provides a structured Salesforce certification track through its Learning Gateway, covering Admin, Developer, and Architecture credentials. This role offers a clear Salesforce Developer to Technical Lead progression and consistent demand for Salesforce skills across Capgemini's 300,000-person global delivery network."},
+{id:40,title:"React Developer (1–3 yr)",company:"CleverTap",location:"Mumbai",mode:"Hybrid",experience:"1-3",skills:["React","Redux","D3.js","TypeScript","REST API"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"10–16 LPA",applyUrl:"https://clevertap.com/careers",description:"CleverTap's product team is hiring a React Developer to build data visualisation dashboards for its marketing analytics platform used by 10,000 global brands. You will implement complex chart and funnel components using D3.js, build reusable React libraries, and integrate with real-time analytics APIs. Strong React, TypeScript, and Redux proficiency are required. CleverTap offers excellent compensation, ESOPs, a high-performance product engineering culture, and the satisfaction of building frontend tools that marketing teams at global companies use daily."},
+{id:41,title:"Machine Learning Intern",company:"Fractal Analytics",location:"Mumbai",mode:"Hybrid",experience:"Fresher",skills:["Python","Scikit-learn","NLP","Deep Learning","Model Deployment"],source:"Indeed",postedDaysAgo:4,salaryRange:"₹26k–₹42k/month",applyUrl:"https://fractal.ai/careers",description:"Fractal Analytics is offering an ML Internship for final-year students in data science, statistics, or computer science. You will work on NLP classification models, customer segmentation pipelines, and model deployment workflows for Fortune 500 clients. Python, scikit-learn, and experience with at least one deep learning framework are required. Fractal's applied research culture means you work alongside PhDs and published researchers. High-performing interns are considered for the company's Analyst and Data Scientist graduate track with full-time offers."},
+{id:42,title:"Site Reliability Engineer (Fresher)",company:"Dunzo",location:"Bangalore",mode:"Hybrid",experience:"0-1",skills:["Linux","Kubernetes","Prometheus","Grafana","Python"],source:"LinkedIn",postedDaysAgo:5,salaryRange:"6–10 LPA",applyUrl:"https://dunzo.com/careers",description:"Dunzo's infrastructure team is hiring a fresher SRE to join its reliability engineering effort for hyperlocal delivery systems. You will monitor services using Prometheus and Grafana, respond to production incidents using documented runbooks, and contribute to capacity planning analysis. Linux proficiency and Python scripting for automation are required. This role provides exceptional learning under senior SREs who previously built infrastructure at Google and Amazon. Dunzo serves millions of users across Tier 1 Indian cities with a commitment to sub-20-minute delivery SLAs."},
+{id:43,title:"Angular Developer (1–3 yr)",company:"Mphasis",location:"Bangalore",mode:"Hybrid",experience:"1-3",skills:["Angular","TypeScript","RxJS","Jest","Accessibility"],source:"Naukri",postedDaysAgo:7,salaryRange:"7–12 LPA",applyUrl:"https://www.mphasis.com/careers",description:"Mphasis is hiring an Angular Developer for its digital banking products team serving global financial institutions. You will build enterprise web portals for retail banking customers, implement WCAG 2.1 accessibility standards, and maintain comprehensive Jest test coverage. Strong TypeScript and RxJS expertise are essential. Mphasis's deep fintech positioning means every feature you ship is used by real banking customers. The company provides structured certification support, vendor training access, and performance-linked compensation reviews every 18 months."},
+{id:44,title:"Technical Writer Intern",company:"HashiCorp India",location:"Bangalore",mode:"Remote",experience:"Fresher",skills:["Technical Writing","Markdown","Git","API Documentation","Docs-as-Code"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"₹22k–₹36k/month",applyUrl:"https://www.hashicorp.com/company/careers",description:"HashiCorp India is offering a Technical Writing Internship for engineering students with exceptional written communication skills. You will write developer documentation for Terraform and Vault, maintain docs-as-code workflows in GitHub, and collaborate with product engineers to improve API reference accuracy. HashiCorp documentation is read by over 3 million engineers every month — your writing will have global reach. This is a fully remote role with async-first collaboration across HashiCorp's global team in the US, UK, and India."},
+{id:45,title:"Java Developer (1–3 yr)",company:"SAP Labs India",location:"Bangalore",mode:"Hybrid",experience:"1-3",skills:["Java","Spring MVC","SAP BTP","REST API","OData"],source:"Indeed",postedDaysAgo:3,salaryRange:"10–16 LPA",applyUrl:"https://www.sap.com/india/about/careers.html",description:"SAP Labs India is hiring a Java Developer for its S/4HANA cloud product engineering division. You will implement enterprise module features in Java Spring, build OData APIs for SAP Business Technology Platform integrations, and contribute to cloud extension framework tooling. Understanding of enterprise application patterns and clean architecture principles is preferred. SAP offers one of the strongest employee development programmes in the IT industry with global rotation opportunities, access to SAP Learning Hub, and the career advantage of working on the world's most widely deployed ERP system."},
+{id:46,title:"DevOps Engineer (1–3 yr)",company:"Freshworks",location:"Chennai",mode:"Remote",experience:"1-3",skills:["AWS","Terraform","Docker","GitHub Actions","Monitoring"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"12–20 LPA",applyUrl:"https://www.freshworks.com/company/careers",description:"Freshworks is hiring a DevOps Engineer to build and maintain cloud infrastructure automation for its SaaS product suite. You will manage infrastructure-as-code using Terraform, build GitHub Actions deployment pipelines, ensure production service reliability, and participate in on-call rotations. AWS experience, container orchestration knowledge, and familiarity with observability tooling are required. Freshworks, a NASDAQ-listed company, offers remote-first flexibility, market-competitive compensation, annual stock refreshers, and occasional team offsites at its Chennai headquarters."},
+{id:47,title:"Blockchain Developer Intern",company:"Polygon",location:"Bangalore",mode:"Remote",experience:"Fresher",skills:["Solidity","Ethereum","Web3.js","Node.js","Smart Contracts"],source:"LinkedIn",postedDaysAgo:0,salaryRange:"₹38k–₹58k/month",applyUrl:"https://polygon.technology/careers",description:"Polygon is offering a Blockchain Developer Internship for engineers excited about Web3 and decentralised infrastructure. You will write and test Solidity smart contracts, experiment with Layer 2 transaction batching, and contribute to open-source developer tooling. Basic JavaScript proficiency and familiarity with blockchain fundamentals are required. Polygon's protocol processes 3 billion transactions and powers tens of thousands of dApps. This internship puts you at the frontier of blockchain infrastructure with a globally distributed engineering team and open-source work culture."},
+{id:48,title:"QA Automation Engineer (1–3 yr)",company:"InMobi",location:"Bangalore",mode:"Hybrid",experience:"1-3",skills:["Java","Selenium","Appium","TestNG","Mobile Testing"],source:"Naukri",postedDaysAgo:4,salaryRange:"8–14 LPA",applyUrl:"https://www.inmobi.com/company/careers",description:"InMobi's quality engineering team is hiring a QA Automation Engineer to protect its mobile advertising platform reaching 2 billion consumers. You will build end-to-end automation suites using Appium for Android and iOS, write TestNG test runners, and integrate coverage into deployment pipelines. Strong Java skills and experience with both web and mobile testing frameworks are required. InMobi offers excellent compensation, ESOPs, growth into QA leadership, and the scale challenge of testing an advertising system serving global traffic across 165 markets."},
+{id:49,title:"Database Administrator Intern",company:"MakeMyTrip",location:"Gurgaon",mode:"Hybrid",experience:"Fresher",skills:["MySQL","PostgreSQL","Query Optimisation","Monitoring","Backup & Recovery"],source:"Indeed",postedDaysAgo:6,salaryRange:"₹18k–₹28k/month",applyUrl:"https://careers.makemytrip.com",description:"MakeMyTrip's data infrastructure team is hiring a Database Administrator Intern to support its booking and inventory databases. You will assist with query optimisation, index analysis, backup procedure verification, and performance monitoring of MySQL and PostgreSQL instances serving peak travel season loads. Basic SQL proficiency and understanding of database storage concepts are required. This internship is hands-on with access to production-level database systems. MakeMyTrip offers structured DBA learning resources and clear PPO criteria for outstanding interns."},
+{id:50,title:"Graphic Designer Intern",company:"Canva India",location:"Bangalore",mode:"Remote",experience:"Fresher",skills:["Figma","Illustrator","Motion Design","Brand Design","Typography"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"₹26k–₹42k/month",applyUrl:"https://www.canva.com/careers",description:"Canva India is hiring a Graphic Designer Intern for its marketing design team driving India growth initiatives. You will create social media campaigns, brand materials, and in-app visual assets with a strong visual sensibility and brand consistency. Figma and Illustrator proficiency with motion design experience are required. Canva has a design-first culture and your work will be seen by millions of Indian users. This is a fully remote role with access to Canva Pro, collaboration with the global design team, and a clear PPO track for top creative performers."},
+{id:51,title:"Security Engineer Intern",company:"Informatica India",location:"Hyderabad",mode:"Hybrid",experience:"Fresher",skills:["VAPT","Burp Suite","Python","Cybersecurity","Linux"],source:"Indeed",postedDaysAgo:3,salaryRange:"₹22k–₹36k/month",applyUrl:"https://www.informatica.com/careers",description:"Informatica India is offering a Security Engineering Internship within its information security team. You will conduct vulnerability assessments using Burp Suite and Nessus, assist with penetration testing on internal applications, perform security code reviews, and support compliance audits. Familiarity with Linux, basic Python scripting, and web application security concepts are required. You will work directly with senior security engineers on findings that protect Informatica's enterprise data management platform. Ideal for candidates pursuing CEH or OSCP certifications."},
+{id:52,title:"Product Manager Intern",company:"Khatabook",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["Product Thinking","SQL","User Research","Roadmapping","Communication"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"₹32k–₹52k/month",applyUrl:"https://khatabook.com/careers",description:"Khatabook is hiring a Product Manager Intern to work directly on its SME accounting and payments product used by 10 million small businesses. You will conduct merchant user interviews, write product requirement documents, prioritise backlog items, and track feature OKRs with engineering and design teams. Basic SQL proficiency for self-serve analytics and clear written communication are required. PM interns at Khatabook own real roadmap features — not market research decks — and present outcomes directly to the CPO each fortnight."},
+{id:53,title:"Flutter Developer (Fresher)",company:"Agnikul Cosmos",location:"Chennai",mode:"Onsite",experience:"0-1",skills:["Flutter","Dart","Firebase","REST API","Mobile Development"],source:"LinkedIn",postedDaysAgo:5,salaryRange:"5–8 LPA",applyUrl:"https://agnikul.in/careers",description:"Agnikul Cosmos, India's deep-tech aerospace startup, is building internal operations tools and hiring a Flutter Developer fresher. You will develop cross-platform mobile features for manufacturing workflow tracking, launch operation scheduling, and mission data review. Dart and Flutter proficiency with Firebase and REST integration are required. Agnikul launched India's first privately designed semi-cryogenic rocket — this role offers extraordinary mission context, early-stage ownership, and the chance to contribute to India's private space industry from the very beginning."},
+{id:54,title:"Senior Software Engineer (3–5 yr)",company:"Dream11",location:"Mumbai",mode:"Hybrid",experience:"3-5",skills:["Java","System Design","Kafka","Redis","High Traffic"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"20–35 LPA",applyUrl:"https://dream11.com/careers",description:"Dream11's fantasy sports platform serves 100 million concurrent users during major cricket events — one of the highest traffic spikes of any consumer platform in the world. We are hiring a Senior Software Engineer to design and implement distributed systems capable of handling this load. You will lead backend initiatives, conduct system design reviews, and mentor junior engineers. Deep understanding of database sharding, caching layers, and event-driven processing is required. Dream11 offers top-tier compensation, generous ESOPs, and the most extreme engineering scale challenge available in India."},
+{id:55,title:"Data Platform Engineer (3–5 yr)",company:"Swiggy",location:"Bangalore",mode:"Hybrid",experience:"3-5",skills:["Apache Flink","Kafka","Spark","Python","Streaming"],source:"LinkedIn",postedDaysAgo:1,salaryRange:"22–38 LPA",applyUrl:"https://careers.swiggy.com/data-platform-engineer",description:"Swiggy's data platform team is hiring a senior Data Platform Engineer to architect real-time pipelines processing delivery partner telemetry, restaurant capacity data, and order lifecycle events. You will design Flink streaming jobs, optimise Spark batch processing, and drive data platform reliability initiatives. Experience with streaming data systems at significant scale and strong Python fundamentals are required. This role involves high-visibility cross-functional collaboration and direct influence over Swiggy's data engineering roadmap for the next 24 months."},
+{id:56,title:"Staff Engineer — Infrastructure",company:"Meesho",location:"Bangalore",mode:"Remote",experience:"3-5",skills:["Kubernetes","Terraform","Go","System Design","Platform Engineering"],source:"LinkedIn",postedDaysAgo:3,salaryRange:"30–50 LPA",applyUrl:"https://meesho.careers",description:"Meesho is hiring a Staff Engineer for its infrastructure platform team to design and own the container orchestration layer serving 150 million users. You will lead Terraform IaC migrations, define reliability standards, and shape Meesho's 3-year infrastructure roadmap. This is a senior IC role with significant technical influence and the opportunity to mentor 6 platform engineers. Deep Kubernetes expertise and infrastructure at 100 million-plus user scale is required. Remote-first with competitive compensation, generous ESOPs, and quarterly offsites."},
+{id:57,title:"Android Developer (Fresher)",company:"Slice",location:"Bangalore",mode:"Hybrid",experience:"Fresher",skills:["Kotlin","Android","Jetpack Compose","MVVM","Retrofit"],source:"LinkedIn",postedDaysAgo:4,salaryRange:"5–8 LPA",applyUrl:"https://sliceit.com/careers",description:"Slice's mobile engineering team is hiring an Android Developer fresher for its fintech consumer app serving 12 million users. You will implement new payment and credit features using Kotlin and Jetpack Compose, integrate Retrofit API clients, and participate in code reviews with senior engineers. Kotlin proficiency and understanding of MVVM architecture are required. Slice offers a strong mentorship culture, bi-weekly 1:1s with senior engineers, real product ownership from the first month, and meaningful compensation for a first job in fintech."},
+{id:58,title:"Generative AI Intern",company:"Persistent Systems",location:"Pune",mode:"Hybrid",experience:"Fresher",skills:["Python","LLMs","LangChain","Prompt Engineering","OpenAI API"],source:"Naukri",postedDaysAgo:0,salaryRange:"₹32k–₹52k/month",applyUrl:"https://www.persistent.com/careers",description:"Persistent Systems is hiring Generative AI Interns to build LLM-powered features into enterprise software products for global clients. You will design prompt pipelines using LangChain, integrate OpenAI and Gemini APIs, evaluate model output quality, and build retrieval-augmented generation tools. Python fluency and basic familiarity with the generative AI ecosystem are required. Persistent's dedicated AI Labs span Pune and Nagpur with 200+ researchers. Interns work alongside AI architects on real client deliverables and may have their work demoed at enterprise conferences."},
+{id:59,title:"Business Intelligence Analyst (1–3 yr)",company:"Nykaa",location:"Mumbai",mode:"Hybrid",experience:"1-3",skills:["Power BI","SQL","Python","Data Modelling","Stakeholder Communication"],source:"Indeed",postedDaysAgo:5,salaryRange:"8–13 LPA",applyUrl:"https://www.nykaa.com/careers",description:"Nykaa's business intelligence team is hiring a BI Analyst to build executive dashboards and data models for category, supply chain, and marketing decision-making. You will write complex SQL transformations, build star schema models in the data warehouse, and develop Power BI reports reviewed by C-suite leaders weekly. Strong analytical thinking and the ability to communicate findings to non-technical stakeholders are required. Nykaa is India's leading beauty and fashion e-commerce company with strong female leadership and a high-performance analytics culture."},
+{id:60,title:"Software Engineer — Payments (3–5 yr)",company:"PhonePe",location:"Bangalore",mode:"Hybrid",experience:"3-5",skills:["Java","Distributed Systems","MySQL","gRPC","High Availability"],source:"LinkedIn",postedDaysAgo:2,salaryRange:"25–45 LPA",applyUrl:"https://www.phonepe.com/careers",description:"PhonePe's payments infrastructure team is hiring a Software Engineer to work on its core UPI transaction processing engine. You will design fault-tolerant payment services, optimise high-throughput MySQL query plans, and lead cross-team API contract negotiations with banking partners. Three or more years of backend engineering experience and deep distributed system design knowledge are required. PhonePe processes 4.5 billion transactions per month — your code will be part of India's most critical financial infrastructure. Exceptional compensation, ESOPs, and the scale challenge of a lifetime."}
+];
+
+/* ══════════════════════════════════════════════════════
+   ROUTER
+══════════════════════════════════════════════════════ */
+const _rt=new Map();let _404fn=null,_nc=null;
+function reg(p,fn){_rt.set(p,fn);}
+function notFound(fn){_404fn=fn;}
+function onNav(fn){_nc=fn;}
+function curPath(){return window.location.hash.slice(1)||'/';}
+function go(path){if(curPath()===path)return;window.location.hash=path;closeMob();}
+function resolve(){
+  const p=curPath(),fn=_rt.get(p)||_404fn,v=document.getElementById('view');
+  v.innerHTML=fn?fn(p):'';
+  if(_nc)_nc(p);
+  window.scrollTo(0,0);
+}
+function syncNav(path){
+  document.querySelectorAll('[data-r]').forEach(el=>el.classList.toggle('active',el.getAttribute('data-r')===path));
+}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE MENU
+══════════════════════════════════════════════════════ */
+function toggleMob(){document.getElementById('mobnav').classList.contains('open')?closeMob():openMob();}
+function openMob(){const m=document.getElementById('mobnav'),b=document.getElementById('hbg');m.classList.add('open');m.setAttribute('aria-hidden','false');b.classList.add('open');b.setAttribute('aria-expanded','true');}
+function closeMob(){const m=document.getElementById('mobnav'),b=document.getElementById('hbg');if(!m||!b)return;m.classList.remove('open');m.setAttribute('aria-hidden','true');b.classList.remove('open');b.setAttribute('aria-expanded','false');}
+document.addEventListener('click',e=>{const m=document.getElementById('mobnav'),b=document.getElementById('hbg');if(m&&b&&m.classList.contains('open')&&!m.contains(e.target)&&!b.contains(e.target))closeMob();});
+
+/* ══════════════════════════════════════════════════════
+   SAVED JOBS (localStorage)
+══════════════════════════════════════════════════════ */
+function getSaved(){try{return JSON.parse(localStorage.getItem('jnt_saved')||'[]');}catch{return[];}}
+function isSaved(id){return getSaved().includes(id);}
+function toggleSave(id){
+  let s=getSaved();
+  const now=s.includes(id);
+  s=now?s.filter(x=>x!==id):[...s,id];
+  localStorage.setItem('jnt_saved',JSON.stringify(s));
+  document.querySelectorAll(`[data-sid="${id}"]`).forEach(btn=>{
+    btn.classList.toggle('sv',!now);
+    btn.textContent=now?'Save':'✓ Saved';
+  });
+  if(curPath()==='/saved')resolve();
+}
+
+/* ══════════════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════════════ */
+function openModal(id){
+  const j=JOBS.find(x=>x.id===id);if(!j)return;
+  const sv=isSaved(id);
+  document.getElementById('mbox').innerHTML=`
+    <div class="mhead">
+      <div style="min-width:0">
+        <div class="mtitle">${j.title}</div>
+        <div class="mco">${j.company} &nbsp;·&nbsp; ${j.location} &nbsp;·&nbsp; ${j.mode}</div>
+      </div>
+      <button class="mclose" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="mgrid">
+        <div class="ir"><span class="ik">Experience</span><span class="iv">${j.experience}</span></div>
+        <div class="ir"><span class="ik">Salary</span><span class="iv">${j.salaryRange}</span></div>
+        <div class="ir"><span class="ik">Source</span><span class="iv"><span class="badge ${srcCls(j.source)}"><span class="bd"></span>${j.source}</span></span></div>
+        <div class="ir"><span class="ik">Posted</span><span class="iv">${daysLabel(j.postedDaysAgo)}</span></div>
+      </div>
+      <div>
+        <div class="msec">About This Role</div>
+        <p class="mdesc">${j.description}</p>
+      </div>
+      <div>
+        <div class="msec">Required Skills</div>
+        <div class="skills">${j.skills.map(s=>`<span class="sk">${s}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btnp" onclick="window.open('${j.applyUrl}','_blank')">Apply Now ↗</button>
+      <button class="btnsm ${sv?'sv':''}" data-sid="${id}" onclick="toggleSave(${id})">${sv?'✓ Saved':'Save'}</button>
+    </div>`;
+  document.getElementById('moverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){document.getElementById('moverlay').classList.remove('open');document.body.style.overflow='';}
+function handleOverlayClick(e){if(e.target===document.getElementById('moverlay'))closeModal();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const o=document.getElementById('moverlay');if(o&&o.classList.contains('open'))closeModal();}});
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════ */
+function srcCls(s){return s==='LinkedIn'?'bli':s==='Naukri'?'bnk':'bind';}
+function daysLabel(d){return d===0?'Today':d===1?'1 day ago':d+' days ago';}
+function escapeAttr(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ══════════════════════════════════════════════════════
+   STATUS TRACKING  (key: jobTrackerStatus)
+   Schema: { [jobId]: { status: string, date: ISO string } }
+══════════════════════════════════════════════════════ */
+const STATUS_KEY = 'jobTrackerStatus';
+const STATUS_OPTS = ['Not Applied', 'Applied', 'Rejected', 'Selected'];
+
+function getAllStatuses() {
+  try { return JSON.parse(localStorage.getItem(STATUS_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function getJobStatus(id) {
+  const all = getAllStatuses();
+  return (all[id] && all[id].status) ? all[id].status : 'Not Applied';
+}
+
+function setJobStatus(id, status) {
+  const all = getAllStatuses();
+  all[id] = { status, date: new Date().toISOString() };
+  localStorage.setItem(STATUS_KEY, JSON.stringify(all));
+}
+
+/* CSS class per status */
+function statusBtnCls(s) {
+  if (s === 'Applied')  return 'sst-ap';
+  if (s === 'Rejected') return 'sst-rj';
+  if (s === 'Selected') return 'sst-sl';
+  return 'sst-na';
+}
+
+/* badge class (for digest status updates list) */
+function statusBadgeCls(s) {
+  if (s === 'Applied')  return 'bli';
+  if (s === 'Rejected') return 'brj';
+  if (s === 'Selected') return 'bdone';
+  return 'bpend';
+}
+
+/* render the status button group for a card */
+function renderStatusBar(id) {
+  const cur = getJobStatus(id);
+  const btns = STATUS_OPTS.map(s => {
+    const cls = statusBtnCls(s);
+    const on  = s === cur ? ' sst-on' : '';
+    const ico = s === 'Not Applied' ? '○' : s === 'Applied' ? '→' : s === 'Rejected' ? '✕' : '✓';
+    return `<button class="sst ${cls}${on}" onclick="changeStatus(${id},'${s}')">${ico} ${s}</button>`;
+  }).join('');
+  return `<div class="sbar" id="sbar-${id}">
+    <span class="sbar-lbl">Status:</span>${btns}
+  </div>`;
+}
+
+/* change status: persist → surgically re-render status bar → toast → refresh grid if status filter active */
+function changeStatus(id, status) {
+  setJobStatus(id, status);
+  // Update every status bar for this job on the current page without full re-render
+  document.querySelectorAll(`#sbar-${id}`).forEach(el => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderStatusBar(id);
+    el.replaceWith(tmp.firstElementChild);
+  });
+  showToast(`Status updated: ${status}`);
+  // If status filter is active and the new status doesn't match, the job should drop out
+  if (F.status && F.status !== status) updateGrid();
+}
+
+/* ══════════════════════════════════════════════════════
+   TOAST ENGINE
+══════════════════════════════════════════════════════ */
+function showToast(msg) {
+  const c = document.getElementById('toast');
+  if (!c) return;
+  const el = document.createElement('div');
+  el.className = 'tn';
+  el.textContent = msg;
+  c.appendChild(el);
+  // auto-dismiss after 2.6s
+  setTimeout(() => {
+    el.classList.add('tn-out');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }, 2600);
+}
+
+/* ── RECENT STATUS UPDATES helper (used by /digest) ── */
+function getRecentStatusUpdates(limit = 10) {
+  try {
+    const all = getAllStatuses();
+    return Object.entries(all)
+      .filter(([, v]) => v && v.status && v.status !== 'Not Applied')
+      .sort(([, a], [, b]) => new Date(b.date) - new Date(a.date))
+      .slice(0, limit)
+      .map(([id, v]) => {
+        const job = JOBS.find(j => j.id === Number(id));
+        return job ? { job, status: v.status, date: v.date } : null;
+      })
+      .filter(Boolean);
+  } catch { return []; }
+}
+
+function renderStatusUpdatesSection() {
+  const updates = getRecentStatusUpdates();
+  const rows = updates.length
+    ? updates.map(({ job, status, date }) => {
+        const d = new Date(date);
+        const dateStr = d.toLocaleDateString('en-IN', { day:'numeric', month:'short' })
+                      + ' · ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+        return `<div class="su-row">
+          <div class="su-info">
+            <div class="su-title">${job.title}</div>
+            <div class="su-co">${job.company}</div>
+          </div>
+          <div class="su-right">
+            <span class="badge ${statusBadgeCls(status)}"><span class="bd"></span>${status}</span>
+            <span class="su-date">${dateStr}</span>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="su-empty">No status updates yet. Change a job status from the dashboard.</div>`;
+
+  return `<div class="su-section">
+    <div class="su-head">
+      <span>Recent Status Updates</span>
+      <span class="badge bpend"><span class="bd"></span>${updates.length} update${updates.length !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="su-body">${rows}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   PREFERENCES  (localStorage key: jobTrackerPreferences)
+══════════════════════════════════════════════════════ */
+const PREF_KEY = 'jobTrackerPreferences';
+const SAVED_KEY = 'jnt_saved';
+
+function getPrefs() {
+  try { return JSON.parse(localStorage.getItem(PREF_KEY) || 'null'); } catch { return null; }
+}
+function prefsSet() {
+  const p = getPrefs();
+  if (!p) return false;
+  return !!(
+    (p.roleKeywords && p.roleKeywords.length) ||
+    (p.preferredLocations && p.preferredLocations.length) ||
+    (p.preferredMode && p.preferredMode.length) ||
+    p.experienceLevel ||
+    (p.skills && p.skills.length)
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   MATCH SCORE ENGINE  — deterministic, exact spec
+══════════════════════════════════════════════════════ */
+function computeScore(job, prefs) {
+  if (!prefs) return 0;
+  let score = 0;
+
+  const kws = (prefs.roleKeywords || []).map(k => k.toLowerCase().trim()).filter(Boolean);
+  const title = job.title.toLowerCase();
+  const desc  = job.description.toLowerCase();
+
+  // +25 any roleKeyword in job.title
+  if (kws.length && kws.some(k => title.includes(k))) score += 25;
+
+  // +15 any roleKeyword in job.description
+  if (kws.length && kws.some(k => desc.includes(k))) score += 15;
+
+  // +15 job.location in preferredLocations
+  const locs = (prefs.preferredLocations || []).map(l => l.toLowerCase());
+  if (locs.length && locs.includes(job.location.toLowerCase())) score += 15;
+
+  // +10 job.mode matches preferredMode (any of selected modes)
+  const modes = (prefs.preferredMode || []).map(m => m.toLowerCase());
+  if (modes.length && modes.includes(job.mode.toLowerCase())) score += 10;
+
+  // +10 job.experience matches experienceLevel
+  if (prefs.experienceLevel && prefs.experienceLevel === job.experience) score += 10;
+
+  // +15 any overlap between job.skills and user skills
+  const userSkills = (prefs.skills || []).map(s => s.toLowerCase().trim()).filter(Boolean);
+  const jobSkills  = job.skills.map(s => s.toLowerCase());
+  if (userSkills.length && userSkills.some(s => jobSkills.some(js => js.includes(s) || s.includes(js)))) score += 15;
+
+  // +5 postedDaysAgo <= 2
+  if (job.postedDaysAgo <= 2) score += 5;
+
+  // +5 source is LinkedIn
+  if (job.source === 'LinkedIn') score += 5;
+
+  return Math.min(score, 100);
+}
+
+function scoreCls(s) {
+  if (s >= 80) return 'sc-green';
+  if (s >= 60) return 'sc-amber';
+  if (s >= 40) return 'sc-neutral';
+  return 'sc-grey';
+}
+
+function scoreBadge(score, prefsActive) {
+  if (!prefsActive) return '';
+  const cls = scoreCls(score);
+  return `<span class="badge ${cls}" title="Match score">${score}%</span>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   FILTER STATE
+══════════════════════════════════════════════════════ */
+let F = { kw:'', loc:'', mode:'', exp:'', src:'', sort:'latest', onlyMatch:false, status:'' };
+
+const LOCS  = [...new Set(JOBS.map(j => j.location))].sort();
+const MODES = [...new Set(JOBS.map(j => j.mode))].sort();
+const EXPS  = ['Fresher','0-1','1-3','3-5'];
+const SRCS  = [...new Set(JOBS.map(j => j.source))].sort();
+
+/* numeric salary extraction for sort */
+function salaryNum(s) {
+  const m = s.match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function getFiltered() {
+  const prefs = getPrefs();
+  const pa = prefsSet();
+  const threshold = prefs ? (prefs.minMatchScore ?? 40) : 40;
+
+  let list = JOBS.map(j => ({ ...j, _score: computeScore(j, prefs) }));
+
+  // AND filters — keyword
+  const kw = F.kw.toLowerCase().trim();
+  if (kw) list = list.filter(j =>
+    j.title.toLowerCase().includes(kw) ||
+    j.company.toLowerCase().includes(kw) ||
+    j.skills.some(s => s.toLowerCase().includes(kw))
+  );
+  // AND — location / mode / experience / source
+  if (F.loc)  list = list.filter(j => j.location   === F.loc);
+  if (F.mode) list = list.filter(j => j.mode       === F.mode);
+  if (F.exp)  list = list.filter(j => j.experience === F.exp);
+  if (F.src)  list = list.filter(j => j.source     === F.src);
+
+  // AND — status  (default 'Not Applied' if no record exists)
+  if (F.status) list = list.filter(j => getJobStatus(j.id) === F.status);
+
+  // AND — match threshold toggle
+  if (F.onlyMatch && pa) list = list.filter(j => j._score >= threshold);
+
+  // sort
+  if      (F.sort === 'latest') list.sort((a, b) => a.postedDaysAgo - b.postedDaysAgo);
+  else if (F.sort === 'score')  list.sort((a, b) => b._score - a._score);
+  else if (F.sort === 'salary') list.sort((a, b) => salaryNum(b.salaryRange) - salaryNum(a.salaryRange));
+
+  return { list, pa, threshold };
+}
+
+function opts(arr, ph) {
+  return `<option value="">${ph}</option>` + arr.map(v => `<option value="${v}">${v}</option>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   JOB CARD
+══════════════════════════════════════════════════════ */
+function jobCard(j, pa) {
+  const sv    = isSaved(j.id);
+  const score = j._score ?? 0;
+  return `<div class="jcard">
+    <div class="jchead">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s8);margin-bottom:6px">
+        <div class="jtitle">${j.title}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+          <span class="badge ${srcCls(j.source)}" style="margin-top:2px"><span class="bd"></span>${j.source}</span>
+          ${pa ? `<span class="badge ${scoreCls(score)}">${score}%</span>` : ''}
+        </div>
+      </div>
+      <div class="jco">${j.company}</div>
+      <div class="jmeta">
+        <span class="chip">📍 ${j.location}</span>
+        <span class="chip">🏢 ${j.mode}</span>
+        <span class="chip">🎓 ${j.experience}</span>
+      </div>
+      <div class="jsal">${j.salaryRange}</div>
+      <div class="skills">
+        ${j.skills.slice(0, 3).map(s => `<span class="sk">${s}</span>`).join('')}
+        ${j.skills.length > 3 ? `<span class="sk">+${j.skills.length - 3} more</span>` : ''}
+      </div>
+    </div>
+    ${renderStatusBar(j.id)}
+    <div class="jfoot">
+      <button class="btnsm" onclick="openModal(${j.id})">View</button>
+      <button class="btnsm ${sv ? 'sv' : ''}" data-sid="${j.id}" onclick="toggleSave(${j.id})">${sv ? '✓ Saved' : 'Save'}</button>
+      <button class="btnsm" onclick="window.open('${j.applyUrl}','_blank')">Apply ↗</button>
+      <span class="jdays">${daysLabel(j.postedDaysAgo)}</span>
+    </div>
+  </div>`;
+}
+
+function renderGrid(jobs, pa, onlyMatch) {
+  if (!jobs.length) {
+    const msg = F.status
+      ? `No jobs with status "${F.status}" match your current filters.`
+      : onlyMatch
+        ? 'No roles match your criteria. Adjust filters or lower the match threshold.'
+        : 'No jobs match your search. Try adjusting your filters or clearing the keyword search.';
+    return `<div class="es" style="padding:var(--s64) var(--s40)">
+      <div class="esicon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <h3>No jobs found.</h3>
+      <p>${msg}</p>
+      <button class="btns" onclick="clearF()">Clear All Filters</button>
+    </div>`;
+  }
+  return `<div class="jgrid">${jobs.map(j => jobCard(j, pa)).join('')}</div>`;
+}
+
+function updateGrid() {
+  const { list, pa } = getFiltered();
+  const jc = document.getElementById('jc');
+  if (jc) jc.innerHTML = renderGrid(list, pa, F.onlyMatch);
+  const jn = document.getElementById('jn');
+  if (jn) jn.textContent = `${list.length} of ${JOBS.length} roles`;
+}
+
+function clearF() {
+  F = { kw:'', loc:'', mode:'', exp:'', src:'', sort:'latest', onlyMatch:false, status:'' };
+  ['fkw','floc','fmode','fexp','fsrc','fsrt','fstatus'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const srt = document.getElementById('fsrt'); if (srt) srt.value = 'latest';
+  const tog = document.getElementById('ftoggle'); if (tog) tog.checked = false;
+  updateGrid();
+}
+
+function bindFilters() {
+  const gi = id => document.getElementById(id);
+  const bind = (id, key, isInput) => {
+    const el = gi(id); if (!el) return;
+    el.addEventListener(isInput ? 'input' : 'change', () => { F[key] = el.value; updateGrid(); });
+  };
+  bind('fkw','kw',true);
+  bind('floc','loc'); bind('fmode','mode'); bind('fexp','exp');
+  bind('fsrc','src'); bind('fsrt','sort'); bind('fstatus','status');
+
+  // restore state into dropdowns
+  const map = { fkw:'kw', floc:'loc', fmode:'mode', fexp:'exp', fsrc:'src', fstatus:'status' };
+  Object.entries(map).forEach(([id, key]) => { const el = gi(id); if (el) el.value = F[key] || ''; });
+  const srt = gi('fsrt'); if (srt) srt.value = F.sort;
+
+  // toggle
+  const tog = gi('ftoggle');
+  if (tog) {
+    tog.checked = F.onlyMatch;
+    tog.addEventListener('change', () => { F.onlyMatch = tog.checked; updateGrid(); });
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   PAGES
+══════════════════════════════════════════════════════ */
+
+/* / */
+function pgHome() {
+  return `<div class="pin"><div class="herowr">
+  <p class="heroe">Job Notification Tracker</p>
+  <h1 class="heroh">Stop Missing<br>The <em style="color:var(--accent);font-style:italic">Right</em> Jobs.</h1>
+  <p class="herosub">Precision-matched job discovery delivered daily at 9AM.</p>
+  <div class="heroacts">
+    <button class="btnp" onclick="go('/settings')">Start Tracking</button>
+    <button class="btns" onclick="go('/dashboard')">Browse Jobs</button>
+  </div>
+  <p class="herono">60 live Indian tech roles loaded · No account required.</p>
+  <hr style="border:none;border-top:1px solid var(--border);margin:var(--s40) 0;max-width:640px">
+  <div class="herost">
+    <div><div class="stn">60</div><div class="stl">Live Indian Roles</div></div>
+    <div><div class="stn">9AM</div><div class="stl">Daily Delivery</div></div>
+    <div><div class="stn">Zero</div><div class="stl">Noise. Curated Only.</div></div>
+  </div>
+</div></div>`;
+}
+
+/* /dashboard */
+function pgDash() {
+  const { list, pa, threshold } = getFiltered();
+  const bannerHtml = !pa
+    ? `<div class="pref-banner">
+        <span class="pref-banner-txt">⚡ Set your preferences to activate intelligent matching.</span>
+        <button class="btnsm" onclick="go('/settings')">Configure →</button>
+       </div>`
+    : '';
+
+  return `<div class="pin">
+  <div class="ctx"><div class="ctxin">
+    <p class="eye">Overview</p><h1>Dashboard</h1>
+    <p class="ctxsub">Browsing ${JOBS.length} matched roles across India. ${pa ? `Match threshold: ${threshold}%.` : 'Set preferences to enable scoring.'}</p>
+  </div></div>
+  <div class="pw">
+    ${bannerHtml}
+    <div class="fbar">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1fr;gap:var(--s16);align-items:end;">
+        <div class="field">
+          <label for="fkw">Search</label>
+          <input id="fkw" type="text" placeholder="Title, company or skill…">
+        </div>
+        <div class="field"><label for="floc">Location</label><div class="selw"><select id="floc">${opts(LOCS,'All Locations')}</select></div></div>
+        <div class="field"><label for="fmode">Mode</label><div class="selw"><select id="fmode">${opts(MODES,'All Modes')}</select></div></div>
+        <div class="field"><label for="fexp">Experience</label><div class="selw"><select id="fexp">${opts(EXPS,'All Levels')}</select></div></div>
+        <div class="field"><label for="fsrc">Source</label><div class="selw"><select id="fsrc">${opts(SRCS,'All Sources')}</select></div></div>
+        <div class="field"><label for="fstatus">Status</label><div class="selw"><select id="fstatus">
+          <option value="">All Statuses</option>
+          <option value="Not Applied">Not Applied</option>
+          <option value="Applied">Applied</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Selected">Selected</option>
+        </select></div></div>
+        <div class="field"><label for="fsrt">Sort By</label><div class="selw"><select id="fsrt">
+          <option value="latest">Latest First</option>
+          <option value="score">Match Score</option>
+          <option value="salary">Salary</option>
+        </select></div></div>
+      </div>
+      <div class="frow2">
+        <div class="fmeta">
+          <span id="jn">${list.length} of ${JOBS.length} roles</span>
+          <button class="btnsm" onclick="clearF()">Clear Filters</button>
+        </div>
+        <label class="twrap" title="Filter jobs above your match threshold">
+          <input type="checkbox" id="ftoggle" class="tinp" ${F.onlyMatch ? 'checked' : ''}>
+          <span class="ttrack"><span class="tthumb"></span></span>
+          <span class="tlabel">Only above threshold${pa ? ` (${threshold}%)` : ''}</span>
+        </label>
+      </div>
+    </div>
+    <div id="jc">${renderGrid(list, pa, F.onlyMatch)}</div>
+  </div></div>`;
+}
+
+/* /saved */
+function pgSaved() {
+  const ids = getSaved();
+  const prefs = getPrefs();
+  const pa = prefsSet();
+  const jobs = JOBS
+    .filter(j => ids.includes(j.id))
+    .map(j => ({ ...j, _score: computeScore(j, prefs) }));
+
+  if (!jobs.length) return `<div class="pin">
+    <div class="ctx"><div class="ctxin"><p class="eye">Saved Roles</p><h1>Saved</h1><p class="ctxsub">Roles you have bookmarked for further review.</p></div></div>
+    <div class="pw"><div class="card"><div class="ch"><span>Bookmarked Roles</span><span class="badge bpend"><span class="bd"></span>Empty</span></div>
+    <div class="es">
+      <div class="esicon"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="estag"><span class="etdot"></span>No saved roles</div>
+      <h3>Nothing saved yet.</h3>
+      <p>Browse the Dashboard, click Save on any role, and it will appear here. Saved roles persist after page reload.</p>
+      <button class="btns" onclick="go('/dashboard')">Browse Dashboard</button>
+    </div></div></div>
+  </div>`;
+
+  return `<div class="pin">
+    <div class="ctx"><div class="ctxin"><p class="eye">Saved Roles</p><h1>Saved</h1>
+    <p class="ctxsub">${jobs.length} role${jobs.length === 1 ? '' : 's'} saved. Click View for full details or Apply to open the listing.</p>
+    </div></div>
+    <div class="pw"><div class="jgrid">${jobs.map(j => jobCard(j, pa)).join('')}</div></div>
+  </div>`;
+}
+
+/* /digest */
+
+/* ── DIGEST ENGINE HELPERS ── */
+const DIGEST_KEY_PREFIX = 'jobTrackerDigest_';
+
+function todayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${DIGEST_KEY_PREFIX}${y}-${m}-${day}`;
+}
+
+function todayLabel() {
+  return new Date().toLocaleDateString('en-IN', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+}
+
+function getStoredDigest() {
+  try {
+    const raw = localStorage.getItem(todayKey());
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function buildDigest() {
+  const prefs = getPrefs();
+  if (!prefs) return null;
+  const scored = JOBS
+    .map(j => ({ ...j, _score: computeScore(j, prefs) }))
+    .filter(j => j._score > 0)
+    .sort((a, b) => b._score - a._score || a.postedDaysAgo - b.postedDaysAgo)
+    .slice(0, 10);
+  return scored.length ? scored : null;
+}
+
+function storeDigest(jobs) {
+  const payload = { generatedAt: new Date().toISOString(), jobs };
+  localStorage.setItem(todayKey(), JSON.stringify(payload));
+}
+
+/* Score badge class reuse */
+function digestScoreCls(s) {
+  if (s >= 80) return 'sc-green';
+  if (s >= 60) return 'sc-amber';
+  if (s >= 40) return 'sc-neutral';
+  return 'sc-grey';
+}
+
+function renderDigestEmail(jobs, generatedAt) {
+  const genTime = generatedAt
+    ? new Date(generatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    : '—';
+
+  const jobRows = jobs.map((j, i) => `
+    <div class="digest-job">
+      <div class="digest-job-left">
+        <div class="digest-num">${String(i + 1).padStart(2, '0')} / 10</div>
+        <div class="digest-jtitle">${j.title}</div>
+        <div class="digest-jco">${j.company}</div>
+        <div class="digest-chips">
+          <span class="digest-chip">📍 ${j.location}</span>
+          <span class="digest-chip">🏢 ${j.mode}</span>
+          <span class="digest-chip">🎓 ${j.experience}</span>
+          <span class="digest-chip">💰 ${j.salaryRange}</span>
+        </div>
+      </div>
+      <div class="digest-right">
+        <span class="badge ${digestScoreCls(j._score)} digest-score">${j._score}%</span>
+        <button class="digest-apply" onclick="window.open('${j.applyUrl}','_blank')">Apply ↗</button>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div class="digest-email">
+      <div class="digest-header">
+        <div class="digest-eyebrow">Job Notification Tracker &nbsp;·&nbsp; 9AM Digest</div>
+        <div class="digest-headline">Top 10 Jobs For You</div>
+        <div class="digest-date">${todayLabel()} &nbsp;·&nbsp; Generated at ${genTime}</div>
+      </div>
+      <div class="digest-body">
+        <p class="digest-intro">Your personalised digest is ready. These roles were selected based on your saved preferences and ranked by match score. Apply directly from this digest or visit the dashboard for full details.</p>
+        ${jobRows}
+      </div>
+      <div class="digest-footer">
+        <p class="digest-footer-txt">This digest was generated based on your preferences. Scores range from 0–100 across title, description, location, mode, experience, and skill signals.<br>To update your criteria, visit <strong>Settings</strong>.</p>
+        <div class="digest-actions">
+          <button class="btnp" onclick="copyDigest()">Copy to Clipboard</button>
+          <button class="btns" onclick="emailDigest()">Create Email Draft</button>
+          <span class="copy-flash" id="copy-flash">✓ Copied</span>
+        </div>
+        <div class="digest-note">
+          <span class="digest-note-dot"></span>
+          Demo Mode: Daily 9AM trigger simulated manually. In production this runs automatically at 9:00 AM IST.
+        </div>
+      </div>
+    </div>`;
+}
+
+function pgDigest() {
+  const pa = prefsSet();
+  const stored = getStoredDigest();
+
+  // ── No prefs: blocking state
+  if (!pa) {
+    return `<div class="pin">
+    <div class="ctx"><div class="ctxin"><p class="eye">Daily Summary</p><h1>Digest</h1>
+      <p class="ctxsub">Set your preferences to generate a personalised daily digest.</p>
+    </div></div>
+    <div class="digest-wrap">
+      <div class="digest-ctrl">
+        <div class="digest-ctrl-row">
+          <div>
+            <div style="font-family:var(--fh);font-size:var(--h4);font-weight:700;letter-spacing:-0.01em;margin-bottom:var(--s8)">Preferences required</div>
+            <div class="digest-ctrl-meta">Set your preferences to generate a personalized digest.</div>
+          </div>
+          <button class="btnp" onclick="go('/settings')">Configure Settings →</button>
+        </div>
+      </div>
+      <div class="card"><div class="cb">
+        <div class="es" style="padding:var(--s40) 0;min-height:auto">
+          <div class="esicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <h3>No preferences found.</h3>
+          <p>Visit Settings, fill in your role keywords, preferred locations, modes, and experience level, then return here to generate your first digest.</p>
+          <button class="btns" onclick="go('/settings')">Go to Settings</button>
+        </div>
+      </div></div>
+    </div></div>`;
+  }
+
+  // ── Prefs set: show control panel + digest (stored or empty)
+  const hasStored = !!stored;
+  const digestJobs = stored ? stored.jobs : null;
+  const generatedAt = stored ? stored.generatedAt : null;
+
+  const ctrlHtml = `
+    <div class="digest-ctrl">
+      <div class="digest-ctrl-row">
+        <div>
+          <div style="font-family:var(--fh);font-size:var(--h4);font-weight:700;letter-spacing:-0.01em;margin-bottom:var(--s8)">
+            ${hasStored ? "Today's digest loaded" : "Ready to generate"}
+          </div>
+          <div class="digest-ctrl-meta">
+            ${hasStored
+              ? `Generated at ${new Date(generatedAt).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'})} &nbsp;·&nbsp; ${todayLabel()}`
+              : 'Click Generate to produce your personalised 9AM digest.'}
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--s16);align-items:center;flex-wrap:wrap">
+          <button class="btnp" onclick="generateDigest()">
+            ${hasStored ? '↺ Regenerate' : 'Generate Today\'s 9AM Digest (Simulated)'}
+          </button>
+          ${hasStored ? '<button class="btns" onclick="clearDigest()">Clear</button>' : ''}
+        </div>
+      </div>
+    </div>`;
+
+  // ── No matches yet (prefs set but no jobs above 0)
+  const noMatchHtml = `
+    <div class="card"><div class="cb">
+      <div class="es" style="padding:var(--s40) 0;min-height:auto">
+        <div class="esicon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <h3>No matching roles today.</h3>
+        <p>No jobs scored above 0 with your current preferences. Check again tomorrow or broaden your settings.</p>
+        <button class="btns" onclick="go('/settings')">Adjust Preferences</button>
+      </div>
+    </div></div>`;
+
+  const digestHtml = !hasStored
+    ? ''
+    : digestJobs && digestJobs.length
+      ? renderDigestEmail(digestJobs, generatedAt)
+      : noMatchHtml;
+
+  return `<div class="pin">
+  <div class="ctx"><div class="ctxin"><p class="eye">Daily Summary</p><h1>Digest</h1>
+    <p class="ctxsub">Top 10 personalised roles, ranked by match score. ${hasStored ? 'Digest persisted for today.' : 'Generate to begin.'}</p>
+  </div></div>
+  <div class="digest-wrap">
+    ${ctrlHtml}
+    ${digestHtml}
+    ${renderStatusUpdatesSection()}
+  </div></div>`;
+}
+
+function generateDigest() {
+  const jobs = buildDigest();
+  if (jobs && jobs.length) {
+    storeDigest(jobs);
+  } else {
+    // store an empty digest so UI shows the "no matches" state correctly
+    localStorage.setItem(todayKey(), JSON.stringify({ generatedAt: new Date().toISOString(), jobs: [] }));
+  }
+  // re-render digest page in place
+  const v = document.getElementById('view');
+  if (v) { v.innerHTML = pgDigest(); }
+}
+
+function clearDigest() {
+  localStorage.removeItem(todayKey());
+  const v = document.getElementById('view');
+  if (v) { v.innerHTML = pgDigest(); }
+}
+
+/* ── COPY TO CLIPBOARD ── */
+function digestPlainText() {
+  const stored = getStoredDigest();
+  if (!stored || !stored.jobs.length) return '';
+  const lines = [
+    `Top 10 Jobs For You — 9AM Digest`,
+    `${todayLabel()}`,
+    ``,
+    ...stored.jobs.map((j, i) =>
+      `${i + 1}. ${j.title} @ ${j.company}` +
+      `\n   ${j.location} · ${j.mode} · ${j.experience}` +
+      `\n   Match: ${j._score}% · Salary: ${j.salaryRange}` +
+      `\n   Apply: ${j.applyUrl}`
+    ),
+    ``,
+    `This digest was generated based on your preferences.`,
+    `Powered by Job Notification Tracker`,
+  ];
+  return lines.join('\n');
+}
+
+function copyDigest() {
+  const txt = digestPlainText();
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).then(() => {
+    const el = document.getElementById('copy-flash');
+    if (el) {
+      el.style.display = 'inline';
+      setTimeout(() => { el.style.display = 'none'; }, 2500);
+    }
+  }).catch(() => {
+    // fallback for environments without clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = txt;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const el = document.getElementById('copy-flash');
+    if (el) { el.style.display = 'inline'; setTimeout(() => { el.style.display = 'none'; }, 2500); }
+  });
+}
+
+/* ── EMAIL DRAFT ── */
+function emailDigest() {
+  const txt = digestPlainText();
+  if (!txt) return;
+  const subject = encodeURIComponent('My 9AM Job Digest');
+  const body    = encodeURIComponent(txt);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+/* /settings */
+function pgSettings() {
+  const p = getPrefs() || {};
+  const kw   = (p.roleKeywords    || []).join(', ');
+  const sk   = (p.skills          || []).join(', ');
+  const locs = p.preferredLocations || [];
+  const modes= p.preferredMode    || [];
+  const exp  = p.experienceLevel  || '';
+  const thr  = p.minMatchScore    ?? 40;
+
+  const locOpts = LOCS.map(l =>
+    `<option value="${l}" ${locs.includes(l) ? 'selected' : ''}>${l}</option>`
+  ).join('');
+
+  const modeCheck = (m) =>
+    `<label class="cblbl"><input type="checkbox" data-mode="${m}" ${modes.includes(m) ? 'checked' : ''}> ${m}</label>`;
+
+  const expOpts = ['','Fresher','0-1','1-3','3-5'].map(v =>
+    `<option value="${v}" ${exp === v ? 'selected' : ''}>${v || '— Select level —'}</option>`
+  ).join('');
+
+  const pa = prefsSet();
+  const statusCard = pa ? `
+    <div class="card"><div class="ch">Active Preferences</div><div class="cb">
+      <div class="ir"><span class="ik">Keywords</span><span class="iv">${kw || '—'}</span></div>
+      <div class="ir"><span class="ik">Locations</span><span class="iv">${locs.join(', ') || '—'}</span></div>
+      <div class="ir"><span class="ik">Modes</span><span class="iv">${modes.join(', ') || '—'}</span></div>
+      <div class="ir"><span class="ik">Experience</span><span class="iv">${exp || '—'}</span></div>
+      <div class="ir"><span class="ik">Skills</span><span class="iv">${sk || '—'}</span></div>
+      <div class="ir"><span class="ik">Threshold</span><span class="iv">${thr}%</span></div>
+    </div></div>` : `
+    <div class="card"><div class="ch">Status</div><div class="cb">
+      <p style="font-size:var(--sm);color:var(--muted);line-height:1.65">No preferences saved yet. Fill the form and click Save to activate intelligent matching on the dashboard.</p>
+    </div></div>`;
+
+  return `<div class="pin">
+  <div class="ctx"><div class="ctxin"><p class="eye">Preferences</p><h1>Settings</h1>
+    <p class="ctxsub">Save your preferences to enable match scoring on the dashboard.</p>
+  </div></div>
+  <div class="pw two-col">
+    <div style="display:flex;flex-direction:column;gap:var(--s24)">
+
+      <div class="card"><div class="ch">Role Preferences</div><div class="cb">
+        <div class="sgrid">
+
+          <div class="field">
+            <label>Role Keywords</label>
+            <input id="p-kw" type="text" placeholder="e.g. Python Developer, React Intern" value="${escapeAttr(kw)}">
+            <span style="font-size:var(--xs);color:var(--muted)">Comma-separated. Matches title (+25) and description (+15).</span>
+          </div>
+
+          <div class="field">
+            <label>Skills</label>
+            <input id="p-sk" type="text" placeholder="e.g. React, Python, SQL" value="${escapeAttr(sk)}">
+            <span style="font-size:var(--xs);color:var(--muted)">Comma-separated. Any overlap with job skills (+15).</span>
+          </div>
+
+          <div class="field">
+            <label>Preferred Locations</label>
+            <select id="p-loc" multiple>${locOpts}</select>
+            <span style="font-size:var(--xs);color:var(--muted)">Hold Ctrl / Cmd to select multiple.</span>
+          </div>
+
+          <div class="field">
+            <label>Experience Level</label>
+            <div class="selw"><select id="p-exp">${expOpts}</select></div>
+            <span style="font-size:var(--xs);color:var(--muted)">Exact match scores +10.</span>
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Work Mode</label>
+            <div class="cbgroup" id="p-mode-group">
+              ${modeCheck('Remote')}${modeCheck('Hybrid')}${modeCheck('Onsite')}
+            </div>
+            <span style="font-size:var(--xs);color:var(--muted)">Any selected mode match scores +10.</span>
+          </div>
+
+          <div class="sfield" style="grid-column:1/-1">
+            <div class="slabel">
+              <span>Minimum Match Score</span>
+              <span id="thr-val" style="font-weight:700;color:var(--accent)">${thr}%</span>
+            </div>
+            <input type="range" id="p-thr" min="0" max="100" value="${thr}"
+              oninput="document.getElementById('thr-val').textContent=this.value+'%'">
+            <span style="font-size:var(--xs);color:var(--muted)">Jobs below this score are hidden when the "Only above threshold" toggle is on.</span>
+          </div>
+
+        </div>
+
+        <div style="margin-top:var(--s40);display:flex;gap:var(--s16);align-items:center;flex-wrap:wrap">
+          <button class="btnp" onclick="savePrefs()">Save Preferences</button>
+          <button class="btns" onclick="clearPrefs()">Reset</button>
+          <span id="save-msg" style="font-family:var(--fm);font-size:var(--xs);color:var(--success);display:none">✓ Saved</span>
+        </div>
+      </div></div>
+
+    </div>
+    <div class="scol">
+      ${statusCard}
+      <div class="card"><div class="ch">Dataset</div><div class="cb">
+        <div class="ir"><span class="ik">Total jobs</span><span class="iv">60</span></div>
+        <div class="ir"><span class="ik">Cities</span><span class="iv">${LOCS.length}</span></div>
+        <div class="ir"><span class="ik">Sources</span><span class="iv">LinkedIn, Naukri, Indeed</span></div>
+      </div></div>
+      <div class="card"><div class="ch">Scoring Weights</div><div class="cb">
+        <div class="ir"><span class="ik">Title match</span><span class="iv">+25</span></div>
+        <div class="ir"><span class="ik">Description match</span><span class="iv">+15</span></div>
+        <div class="ir"><span class="ik">Location match</span><span class="iv">+15</span></div>
+        <div class="ir"><span class="ik">Skill overlap</span><span class="iv">+15</span></div>
+        <div class="ir"><span class="ik">Mode match</span><span class="iv">+10</span></div>
+        <div class="ir"><span class="ik">Experience match</span><span class="iv">+10</span></div>
+        <div class="ir"><span class="ik">Posted ≤ 2 days</span><span class="iv">+5</span></div>
+        <div class="ir"><span class="ik">Source: LinkedIn</span><span class="iv">+5</span></div>
+      </div></div>
+    </div>
+  </div></div>`;
+}
+
+function savePrefs() {
+  const kw   = document.getElementById('p-kw')?.value || '';
+  const sk   = document.getElementById('p-sk')?.value || '';
+  const expEl= document.getElementById('p-exp');
+  const thrEl= document.getElementById('p-thr');
+
+  // multi-select locations
+  const locEl = document.getElementById('p-loc');
+  const locs = locEl ? [...locEl.selectedOptions].map(o => o.value) : [];
+
+  // checkboxes
+  const modeBoxes = document.querySelectorAll('#p-mode-group input[type=checkbox]');
+  const modes = [...modeBoxes].filter(c => c.checked).map(c => c.dataset.mode);
+
+  const prefs = {
+    roleKeywords:       kw.split(',').map(s => s.trim()).filter(Boolean),
+    preferredLocations: locs,
+    preferredMode:      modes,
+    experienceLevel:    expEl ? expEl.value : '',
+    skills:             sk.split(',').map(s => s.trim()).filter(Boolean),
+    minMatchScore:      thrEl ? parseInt(thrEl.value, 10) : 40,
+  };
+
+  localStorage.setItem(PREF_KEY, JSON.stringify(prefs));
+
+  const msg = document.getElementById('save-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000); }
+}
+
+function clearPrefs() {
+  localStorage.removeItem(PREF_KEY);
+  resolve(); // re-render settings page
+}
+
+/* /proof */
+function pgProof() {
+  const pa = prefsSet();
+  const digestStored = !!getStoredDigest();
+  const statusCount  = Object.keys(getAllStatuses()).length;
+  const steps = [
+    ['Design System',          'bdone', 'Done'],
+    ['Route Skeleton',         'bdone', 'Done'],
+    ['App Skeleton',           'bdone', 'Done'],
+    ['Dataset + Job Cards',    'bdone', 'Done'],
+    ['Preference Engine',      'bdone', 'Done'],
+    ['Match Score Engine',     'bdone', 'Done'],
+    ['Digest Engine',          'bdone', 'Done'],
+    ['Status Tracking',        'bdone', 'Done'],
+  ];
+  return `<div class="pin">
+  <div class="ctx"><div class="ctxin"><p class="eye">Delivery Proof</p><h1>Proof</h1><p class="ctxsub">Build checklist confirming each system component status.</p></div></div>
+  <div class="pw two-col">
+    <div class="card"><div class="ch">Build Checklist</div>
+    <div style="padding:0 var(--s24)">
+      ${steps.map(([l,c,t]) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:var(--s16) 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:var(--sm);font-weight:500">${l}</span>
+        <span class="badge ${c}"><span class="bd"></span>${t}</span>
+      </div>`).join('')}
+      <p style="padding:var(--s16) 0;font-family:var(--fm);font-size:var(--xs);color:var(--disabled)">All 8 phases complete. Ready for production.</p>
+    </div></div>
+    <div class="scol">
+      <div class="card"><div class="ch">System</div><div class="cb">
+        <div class="ir"><span class="ik">Version</span><span class="iv">0.7.0</span></div>
+        <div class="ir"><span class="ik">Phase</span><span class="iv">8 of 8</span></div>
+        <div class="ir"><span class="ik">Jobs loaded</span><span class="iv">60</span></div>
+        <div class="ir"><span class="ik">Scoring</span><span class="iv">${pa ? 'Active' : 'No prefs set'}</span></div>
+        <div class="ir"><span class="ik">Digest</span><span class="iv">${digestStored ? 'Generated today' : 'Not yet run'}</span></div>
+        <div class="ir"><span class="ik">Statuses set</span><span class="iv">${statusCount} job${statusCount !== 1 ? 's' : ''}</span></div>
+      </div></div>
+      <div class="card"><div class="ch">localStorage Keys</div><div class="cb">
+        <div class="ir"><span class="ik">Preferences</span><span class="iv" style="font-family:var(--fm);font-size:var(--xs)">jobTrackerPreferences</span></div>
+        <div class="ir"><span class="ik">Saved jobs</span><span class="iv" style="font-family:var(--fm);font-size:var(--xs)">jnt_saved</span></div>
+        <div class="ir"><span class="ik">Digest</span><span class="iv" style="font-family:var(--fm);font-size:var(--xs)">jobTrackerDigest_YYYY-MM-DD</span></div>
+        <div class="ir"><span class="ik">Status</span><span class="iv" style="font-family:var(--fm);font-size:var(--xs)">jobTrackerStatus</span></div>
+      </div></div>
+    </div>
+  </div></div>`;
+}
+
+/* 404 */
+function pg404() {
+  return `<div class="pin" style="max-width:var(--maxw);margin:0 auto;padding:var(--s64) var(--s40);min-height:calc(100vh - var(--navh) - 54px);display:flex;align-items:center">
+  <div style="max-width:var(--prose)">
+    <p style="font-family:var(--fm);font-size:5rem;font-weight:400;color:var(--border-str);line-height:1;margin-bottom:var(--s24);letter-spacing:-0.02em">404</p>
+    <h1 style="font-family:var(--fh);font-size:var(--h1);font-weight:700;letter-spacing:-0.01em;line-height:1.2;margin-bottom:var(--s16)">Page Not Found</h1>
+    <p style="font-size:var(--body);color:var(--muted);line-height:1.7;margin-bottom:var(--s40)">The page you are looking for does not exist.</p>
+    <button class="btnp" onclick="go('/')">Return Home</button>
+  </div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   TEST CHECKLIST  (localStorage key: jobTrackerTestStatus)
+══════════════════════════════════════════════════════ */
+const TC_KEY = 'jobTrackerTestStatus';
+
+const TC_ITEMS = [
+  {
+    id: 'pref-persist',
+    label: 'Preferences persist after refresh',
+    tip: 'Save preferences in Settings → refresh page → reopen Settings and confirm values are retained.'
+  },
+  {
+    id: 'score-calc',
+    label: 'Match score calculates correctly',
+    tip: 'Set keywords matching a job title (e.g. "Python Developer") → verify that card shows a non-zero green/amber score badge.'
+  },
+  {
+    id: 'toggle-works',
+    label: '"Show only matches" toggle works',
+    tip: 'Enable the toggle on Dashboard → confirm only jobs at or above the threshold are shown. Disable → all jobs return.'
+  },
+  {
+    id: 'save-persist',
+    label: 'Save job persists after refresh',
+    tip: 'Click Save on any job card → refresh page → open Saved and confirm job is still there.'
+  },
+  {
+    id: 'apply-tab',
+    label: 'Apply opens in new tab',
+    tip: 'Click Apply ↗ on any card or digest row → confirm it opens in a new browser tab without leaving the app.'
+  },
+  {
+    id: 'status-persist',
+    label: 'Status update persists after refresh',
+    tip: 'Set any job to "Applied" → refresh page → confirm the card still shows Applied highlighted in blue.'
+  },
+  {
+    id: 'status-filter',
+    label: 'Status filter works correctly',
+    tip: 'Set two jobs to "Applied" → use the Status dropdown to filter by Applied → confirm only those two jobs appear.'
+  },
+  {
+    id: 'digest-top10',
+    label: 'Digest generates top 10 by score',
+    tip: 'Set preferences that match several jobs → generate digest → confirm top entry has highest match % and list has ≤10 roles.'
+  },
+  {
+    id: 'digest-persist',
+    label: 'Digest persists for the day',
+    tip: 'Generate digest → note the timestamp → refresh page → navigate to Digest and confirm same timestamp and jobs are shown.'
+  },
+  {
+    id: 'no-errors',
+    label: 'No console errors on main pages',
+    tip: 'Open DevTools Console → visit Dashboard, Saved, Digest, Settings, and Proof → confirm zero red errors logged.'
+  },
+];
+
+function getTCState() {
+  try { return JSON.parse(localStorage.getItem(TC_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function setTCItem(id, checked) {
+  const state = getTCState();
+  state[id] = checked;
+  localStorage.setItem(TC_KEY, JSON.stringify(state));
+}
+
+function getTCPassed() {
+  const state = getTCState();
+  return TC_ITEMS.filter(item => !!state[item.id]).length;
+}
+
+function allTCPassed() {
+  return getTCPassed() === TC_ITEMS.length;
+}
+
+function resetTC() {
+  localStorage.removeItem(TC_KEY);
+  const v = document.getElementById('view');
+  if (v) v.innerHTML = pgTest();
+}
+
+function toggleTC(id) {
+  const state = getTCState();
+  setTCItem(id, !state[id]);
+  // Surgical DOM update — no full re-render
+  const item = document.getElementById(`tc-item-${id}`);
+  if (item) {
+    const checked = getTCState()[id];
+    item.classList.toggle('checked', !!checked);
+    item.setAttribute('aria-checked', String(!!checked));
+  }
+  // Update summary score live
+  const passed = getTCPassed();
+  const scoreEl = document.getElementById('tc-score-num');
+  if (scoreEl) scoreEl.textContent = passed;
+  const warnEl = document.getElementById('tc-warn');
+  if (warnEl) {
+    if (passed === TC_ITEMS.length) {
+      warnEl.className = 'tc-ok';
+      warnEl.textContent = '✓ All tests passed — ready to ship.';
+    } else {
+      warnEl.className = 'tc-warn';
+      warnEl.textContent = `Resolve all issues before shipping. ${TC_ITEMS.length - passed} remaining.`;
+    }
+  }
+}
+
+/* /jt/07-test */
+function pgTest() {
+  const state = getTCState();
+  const passed = getTCPassed();
+  const allDone = passed === TC_ITEMS.length;
+
+  const rows = TC_ITEMS.map((item, i) => {
+    const checked = !!state[item.id];
+    return `<div
+      class="tc-item${checked ? ' checked' : ''}"
+      id="tc-item-${item.id}"
+      role="checkbox"
+      aria-checked="${checked}"
+      tabindex="0"
+      onclick="toggleTC('${item.id}')"
+      onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleTC('${item.id}')}"
+    >
+      <span class="tc-num">${String(i + 1).padStart(2, '0')}</span>
+      <span class="tc-cb" aria-hidden="true">
+        <span class="tc-cb-tick">✓</span>
+      </span>
+      <span class="tc-content">
+        <span class="tc-label">${item.label}</span>
+        <span class="tc-tip">How to test: ${item.tip}</span>
+      </span>
+    </div>`;
+  }).join('');
+
+  return `<div class="pin">
+  <div class="ctx"><div class="ctxin">
+    <p class="eye">Quality Assurance</p>
+    <h1>Test Checklist</h1>
+    <p class="ctxsub">Verify all 10 system behaviours before shipping. Checklist state persists after refresh.</p>
+  </div></div>
+  <div class="tc-wrap">
+
+    <div class="tc-summary">
+      <div>
+        <div class="tc-score">Tests Passed: <span id="tc-score-num">${passed}</span> / ${TC_ITEMS.length}</div>
+        <div style="font-family:var(--fm);font-size:var(--xs);color:var(--muted);margin-top:var(--s8);letter-spacing:0.04em;">
+          ${TC_ITEMS.length - passed === 0 ? 'All checks complete.' : `${TC_ITEMS.length - passed} item${TC_ITEMS.length - passed !== 1 ? 's' : ''} remaining.`}
+        </div>
+      </div>
+      <div id="tc-warn" class="${allDone ? 'tc-ok' : 'tc-warn'}">
+        ${allDone
+          ? '✓ All tests passed — ready to ship.'
+          : `Resolve all issues before shipping. ${TC_ITEMS.length - passed} remaining.`}
+      </div>
+    </div>
+
+    <div class="tc-list">
+      <div class="tc-head">
+        <span>Checklist Items</span>
+        <span class="badge ${allDone ? 'bdone' : 'bpend'}">
+          <span class="bd"></span>${passed} / ${TC_ITEMS.length} passed
+        </span>
+      </div>
+      ${rows}
+    </div>
+
+    <div class="tc-actions">
+      <button class="btnp" onclick="go('/jt/08-ship')">→ Proceed to Ship</button>
+      <button class="btns" onclick="resetTC()">Reset Test Status</button>
+    </div>
+
+  </div></div>`;
+}
+
+/* /jt/08-ship */
+function pgShip() {
+  const passed = getTCPassed();
+  const total  = TC_ITEMS.length;
+  const locked = passed < total;
+  const pct    = Math.round((passed / total) * 100);
+
+  if (locked) {
+    return `<div class="pin">
+    <div class="ctx"><div class="ctxin">
+      <p class="eye">Deployment</p><h1>Ship</h1>
+      <p class="ctxsub">Complete all tests to unlock the ship gate.</p>
+    </div></div>
+    <div class="ship-wrap">
+      <div class="ship-lock">
+        <div class="ship-lock-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h2>Complete all tests before shipping.</h2>
+        <p>You have passed <strong>${passed} of ${total}</strong> tests. All 10 must be checked on the Test Checklist before this gate unlocks.</p>
+        <div class="ship-progress">
+          <div class="ship-progress-bar" style="width:${pct}%"></div>
+        </div>
+        <button class="btns" onclick="go('/jt/07-test')">← Return to Test Checklist</button>
+      </div>
+    </div></div>`;
+  }
+
+  return `<div class="pin">
+  <div class="ctx"><div class="ctxin">
+    <p class="eye">Deployment</p><h1>Ship</h1>
+    <p class="ctxsub">All tests passed. Cleared for production deployment.</p>
+  </div></div>
+  <div class="ship-wrap">
+    <div class="ship-ready">
+      <div style="font-size:2rem;margin-bottom:var(--s16)">✓</div>
+      <h2>All systems go.</h2>
+      <p>All ${total} tests passed. The Job Notification Tracker is verified and ready to ship to production.</p>
+      <div style="display:flex;justify-content:center;gap:var(--s16);flex-wrap:wrap">
+        <button class="btnp" onclick="alert('🚀 Shipped! (Demo mode — no actual deployment target configured.)')">Deploy to Production</button>
+        <button class="btns" onclick="go('/jt/07-test')">← Back to Tests</button>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════════ */
+reg('/', pgHome);
+reg('/dashboard', pgDash);
+reg('/saved', pgSaved);
+reg('/digest', pgDigest);
+reg('/settings', pgSettings);
+reg('/proof', pgProof);
+reg('/jt/07-test', pgTest);
+reg('/jt/08-ship', pgShip);
+notFound(pg404);
+
+document.addEventListener('DOMContentLoaded', () => {
+  onNav(path => {
+    syncNav(path);
+    if (path === '/dashboard') {
+      requestAnimationFrame(() => {
+        bindFilters();
+        updateGrid();
+      });
+    }
+  });
+  window.addEventListener('hashchange', resolve);
+  resolve();
+});
+</script>
+</body>
+</html>
